@@ -5,12 +5,14 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.frames.MainFrame;
@@ -21,26 +23,42 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class MatrixDialog extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 	
+	private final int size;
+	
 	public MatrixDialog(final MainFrame parent, final int size) {
+		this(parent, size, null);
+	}
+	
+	public MatrixDialog(final MainFrame parent, final int size, final float[] matrix) {
+		this.size = size;
+		if(size != 3 && size != 5) {
+			this.dispose();
+		}
 		this.setTitle("Appliquer une matrice");
 		this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.setLocationRelativeTo(parent);
 		this.setResizable(false);
-		this.setJMenuBar(this.createMenu());
+		this.setJMenuBar(this.createMenu(parent));
 		final Container content = this.getContentPane();
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 		content.add(Box.createRigidArea(new Dimension(0, 5)));
+		int index = 0;
 		for(int i = 0; i != size; i++) {
 			final JPanel line = new JPanel();
 			for(int j = 0; j != size; j++) {
 				final JPanel panel = new JPanel();
 				final JSpinner spinner = new JSpinner();
-				spinner.setValue(0);
+				spinner.setValue(matrix == null ? 0 : (int)matrix[index++]);
 				panel.add(spinner);
 				line.add(panel);
 			}
@@ -51,32 +69,16 @@ public class MatrixDialog extends JDialog {
 		ok.addActionListener(new ActionListener() {
 
 			@Override
-			public void actionPerformed(final ActionEvent event) {
-				final float[] matrix = new float[size * size];
-				int index = 0;
-				for(final Component component : content.getComponents()) {
-					if(!(component instanceof JPanel)) {
-						continue;
-					}
-					for(final Component spinner : ((JPanel)component).getComponents()) {
-						if(!(spinner instanceof JSpinner)) {
-							continue;
-						}
-						final Integer value = Utils.toInt(((JSpinner)spinner).getValue().toString());
-						if(value == null) {
-							JOptionPane.showMessageDialog(MatrixDialog.this, "\"" + value + "\" n'est pas une valeur valide !", "Erreur !", JOptionPane.ERROR_MESSAGE);
-						}
-						matrix[index++] = (float)value;
-					}
-				}
-				parent.applyMatrix(matrix, size);
+			public final void actionPerformed(final ActionEvent event) {
+				parent.applyMatrix(getMatrix(), size);
 			}
+			
 		});
 		final JButton fermer = new JButton("Fermer");
 		fermer.addActionListener(new ActionListener() {
 			
 			@Override
-			public void actionPerformed(final ActionEvent event) {
+			public final void actionPerformed(final ActionEvent event) {
 				MatrixDialog.this.dispose();
 			}
 			
@@ -90,17 +92,95 @@ public class MatrixDialog extends JDialog {
 		this.pack();
 	}
 	
-	private JMenuBar createMenu() {
+	private JMenuBar createMenu(final MainFrame parent) {
 		final JMenuBar menu = new JMenuBar();
 		final JMenu fichier = new JMenu("Fichier");
 		final JMenuItem ouvrir = new JMenuItem("Ouvrir...");
+		ouvrir.addActionListener(new ActionListener() {
+			
+			@Override
+			public final void actionPerformed(final ActionEvent event) {
+				final JFileChooser chooser = new JFileChooser();
+				chooser.setFileFilter(new FileNameExtensionFilter("Fichier de matrice (*.mtx)", "mtx"));
+				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
+				chooser.setMultiSelectionEnabled(false);
+				if(chooser.showOpenDialog(MatrixDialog.this) == JFileChooser.APPROVE_OPTION) {
+					try {
+						final List<String> lines = Files.readAllLines(Paths.get(chooser.getSelectedFile().getPath()), StandardCharsets.UTF_8);
+						final int sqrt = (int)Math.sqrt(lines.size());
+						if(sqrt != size) {
+							final float[] matrix = new float[lines.size()];
+							for(int i = 0; i != lines.size(); i++) {
+								matrix[i] = Float.parseFloat(lines.get(i));
+							}
+							new MatrixDialog(parent, sqrt, matrix).setVisible(true);
+							MatrixDialog.this.dispose();
+						}
+					}
+					catch(Exception ex) {
+						JOptionPane.showMessageDialog(MatrixDialog.this, "Impossible de lire ce fichier !", "Erreur !", JOptionPane.ERROR_MESSAGE);
+						ex.printStackTrace();
+					}
+				}
+			}
+			
+		});
 		ouvrir.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_open.png")));
 		fichier.add(ouvrir);
 		final JMenuItem enregistrerSous = new JMenuItem("Enregistrer sous...");
+		enregistrerSous.addActionListener(new ActionListener() {
+			
+			@Override
+			public final void actionPerformed(final ActionEvent event) {
+				final JFileChooser chooser = new JFileChooser();
+				chooser.setFileFilter(new FileNameExtensionFilter("Fichier de matrice (*.mtx)", "mtx"));
+				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
+				chooser.setMultiSelectionEnabled(false);
+				if(chooser.showSaveDialog(MatrixDialog.this) == JFileChooser.APPROVE_OPTION) {
+					try {
+						String path = chooser.getSelectedFile().getPath();
+						if(!path.endsWith(".mtx")) {
+							path += ".mtx";
+						}
+						final File file = new File(path);
+						if(file.exists()) {
+							file.delete();
+						}
+						Files.write(Paths.get(path), Utils.joinFloats(System.lineSeparator(), getMatrix()).getBytes(StandardCharsets.UTF_8));
+					}
+					catch(Exception ex) {
+						JOptionPane.showMessageDialog(MatrixDialog.this, "Impossible d'enregistrer ce fichier !", "Erreur !", JOptionPane.ERROR_MESSAGE);
+						ex.printStackTrace();
+					}
+				}
+			}
+		
+		});
 		enregistrerSous.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_saveas.png")));
 		fichier.add(enregistrerSous);
 		menu.add(fichier);
 		return menu;
+	}
+	
+	public final float[] getMatrix() {
+		final float[] matrix = new float[size * size];
+		int index = 0;
+		for(final Component component : this.getContentPane().getComponents()) {
+			if(!(component instanceof JPanel)) {
+				continue;
+			}
+			for(final Component spinner : ((JPanel)component).getComponents()) {
+				if(!(spinner instanceof JPanel)) {
+					continue;
+				}
+				final Integer value = Utils.toInt(((JSpinner)((JPanel)spinner).getComponents()[0]).getValue().toString());
+				if(value == null) {
+					JOptionPane.showMessageDialog(MatrixDialog.this, "\"" + value + "\" n'est pas une valeur valide !", "Erreur !", JOptionPane.ERROR_MESSAGE);
+				}
+				matrix[index++] = (float)value;
+			}
+		}
+		return matrix;
 	}
 	
 }
