@@ -5,6 +5,8 @@ import javax.swing.UIManager;
 import fr.hdelaunay.image.frames.MainFrame;
 
 public class Main {
+	
+	public static final String RES_PACKAGE = "/fr/hdelaunay/image/res/";
 
 	public static void main(String[] args) {
 		try {

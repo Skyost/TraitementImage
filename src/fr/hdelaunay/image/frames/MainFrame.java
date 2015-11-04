@@ -1,10 +1,13 @@
 package fr.hdelaunay.image.frames;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.io.File;
 import java.util.Stack;
 
@@ -15,28 +18,32 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import fr.hdelaunay.image.filters.Filter;
-import fr.hdelaunay.image.filters.Lissage;
-import fr.hdelaunay.image.filters.Sobel;
+import fr.hdelaunay.image.Main;
+import fr.hdelaunay.image.dialogs.MatrixDialog;
+import fr.hdelaunay.image.utils.Utils;
+import java.awt.Toolkit;
 
 public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private final Stack<BufferedImage> images = new Stack<BufferedImage>();
 	private final JLabel lblPreview = new JLabel();
-	private final JButton btnSobel = new JButton("Filtre Sobel");
-	private final JButton btnLissage = new JButton("Lissage");
+	private final JButton btnMatrice = new JButton("Appliquer matrice...");
 	private final JButton btnAnnuler = new JButton("Annuler");
-	
+
 	private final ActionListener undo = new ActionListener() {
 
 		@Override
@@ -55,68 +62,55 @@ public class MainFrame extends JFrame {
 
 	public MainFrame() {
 		this.setTitle("Traitement image");
+		this.setIconImage(Toolkit.getDefaultToolkit().getImage(Main.class.getResource(Main.RES_PACKAGE + "icon_app.png")));
 		this.setSize(800, 600);
 		this.setLocationRelativeTo(null);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setJMenuBar(this.createMenu());
 		final JScrollPane scrollBar = new JScrollPane(lblPreview);
-		btnSobel.setEnabled(false);
-		btnSobel.addActionListener(new ActionListener() {
+		btnMatrice.addActionListener(new ActionListener() {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				applyFilter(new Sobel());
+				final JSpinner spinner = new JSpinner();
+				spinner.setValue(3);
+				final JLabel size = new JLabel("3 x 3");
+				spinner.addChangeListener(new ChangeListener() {
+
+					@Override
+					public final void stateChanged(final ChangeEvent event) {
+						final Integer value = getSpinnerValue(spinner);
+						size.setText(value == null ? "Valeur invalide !" : value + " x " + value);
+					}
+
+				});
+				while(true) {
+					if(JOptionPane.showConfirmDialog(MainFrame.this, new Component[]{spinner, size}, "Taille de la matrice", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
+						final Integer value = getSpinnerValue(spinner);
+						if(value == null) {
+							continue;
+						}
+						new MatrixDialog(MainFrame.this, value).setVisible(true);
+					}
+					break;
+				}
+			}
+
+			private final Integer getSpinnerValue(final JSpinner spinner) {
+				final Integer value = Utils.toInt(spinner.getValue().toString());
+				return value != null && (value == 3 || value == 5) ? value : null;
 			}
 
 		});
-		btnLissage.setEnabled(false);
-		btnLissage.addActionListener(new ActionListener() {
-
-			@Override
-			public final void actionPerformed(final ActionEvent event) {
-				applyFilter(new Lissage());
-			}
-
-		});
+		btnMatrice.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_matrix.png")));
+		btnMatrice.setEnabled(false);
 		btnAnnuler.addActionListener(undo);
+		btnAnnuler.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_undo.png")));
 		btnAnnuler.setEnabled(false);
 		final Container pane = this.getContentPane();
 		final GroupLayout groupLayout = new GroupLayout(pane);
-		groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.TRAILING).addGroup(
-				groupLayout
-						.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE)
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(
-								groupLayout
-										.createParallelGroup(Alignment.TRAILING)
-										.addGroup(
-												groupLayout
-														.createParallelGroup(Alignment.LEADING, false)
-														.addComponent(btnLissage, Alignment.TRAILING,
-																GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-																Short.MAX_VALUE)
-														.addComponent(btnSobel, Alignment.TRAILING))
-										.addComponent(btnAnnuler, GroupLayout.PREFERRED_SIZE, 89,
-												GroupLayout.PREFERRED_SIZE)).addContainerGap()));
-		groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.LEADING).addGroup(
-				groupLayout
-						.createSequentialGroup()
-						.addContainerGap()
-						.addGroup(
-								groupLayout
-										.createParallelGroup(Alignment.LEADING)
-										.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
-										.addGroup(
-												groupLayout
-														.createSequentialGroup()
-														.addComponent(btnSobel)
-														.addPreferredGap(ComponentPlacement.RELATED)
-														.addComponent(btnLissage)
-														.addPreferredGap(ComponentPlacement.RELATED, 444,
-																Short.MAX_VALUE).addComponent(btnAnnuler)))
-						.addContainerGap()));
+		groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.TRAILING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 631, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false).addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap()));
+		groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.LEADING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addGroup(groupLayout.createParallelGroup(Alignment.LEADING).addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE).addGroup(groupLayout.createSequentialGroup().addComponent(btnMatrice).addPreferredGap(ComponentPlacement.RELATED, 472, Short.MAX_VALUE).addComponent(btnAnnuler))).addContainerGap()));
 		pane.setLayout(groupLayout);
 	}
 
@@ -140,15 +134,16 @@ public class MainFrame extends JFrame {
 						}
 						images.clear();
 						lblPreview.setIcon(new ImageIcon(images.push(image)));
-						btnSobel.setEnabled(true);
-						btnLissage.setEnabled(true);
-					} catch (final Exception ex) {
+						btnMatrice.setEnabled(true);
+					}
+					catch(final Exception ex) {
 						ex.printStackTrace();
 					}
 				}
 			}
 
 		});
+		ouvrir.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_open.png")));
 		fichier.add(ouvrir);
 		final JMenuItem enregistrerSous = new JMenuItem("Enregistrer sous...");
 		enregistrerSous.addActionListener(new ActionListener() {
@@ -177,27 +172,39 @@ public class MainFrame extends JFrame {
 						lblPreview.printAll(graphics);
 						graphics.dispose();
 						ImageIO.write(image, "BMP", file);
-					} catch (final Exception ex) {
+					}
+					catch(final Exception ex) {
 						ex.printStackTrace();
 					}
 				}
 			}
 
 		});
+		enregistrerSous.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_saveas.png")));
 		fichier.addSeparator();
 		fichier.add(enregistrerSous);
 		menu.add(fichier);
 		final JMenu edition = new JMenu("Edition");
 		final JMenuItem annuler = new JMenuItem("Annuler");
 		annuler.addActionListener(undo);
+		annuler.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_undo.png")));
 		edition.add(annuler);
 		menu.add(edition);
 		return menu;
 	}
 
-	private final void applyFilter(final Filter filter) {
-		lblPreview.setIcon(new ImageIcon(images.push(filter.filter(images.peek()))));
-		btnAnnuler.setEnabled(true);
+	public final void applyMatrix(final float[] matrix, final int size) {
+		try {
+			if(size != 3 && size != 5) {
+				return;
+			}
+			lblPreview.setIcon(new ImageIcon(images.push(new ConvolveOp(new Kernel(size, size, matrix)).filter(images.peek(), null))));
+			btnAnnuler.setEnabled(true);
+		}
+		catch(final Exception ex) {
+			JOptionPane.showMessageDialog(this, "<html>Impossible d'appliquer cette matrice !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
+			ex.printStackTrace();
+		}
 	}
 
 }
