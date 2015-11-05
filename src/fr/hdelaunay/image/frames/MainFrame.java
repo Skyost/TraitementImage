@@ -5,6 +5,8 @@ import java.awt.Container;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
@@ -34,16 +36,19 @@ import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.dialogs.MatrixDialog;
 import fr.hdelaunay.image.utils.Utils;
 import java.awt.Toolkit;
-import javax.swing.JSlider;
 
 public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
 	private final Stack<BufferedImage> images = new Stack<BufferedImage>();
+	private int zoom = 0;
+	private final JLabel lblZoom = new JLabel("Zoom (" + zoom + "%) :");
+	private final JButton btnPlus = new JButton("Plus");
+	private final JButton btnMoins = new JButton("Moins");
+	
 	private final JLabel lblPreview = new JLabel();
 	private final JButton btnMatrice = new JButton("Appliquer matrice...");
-	private final JSlider slrZoom = new JSlider();
 	private final JButton btnAnnuler = new JButton("Annuler");
 
 	private final ActionListener undo = new ActionListener() {
@@ -53,6 +58,8 @@ public class MainFrame extends JFrame {
 			if(images.size() <= 1) {
 				return;
 			}
+			zoom = 0;
+			zoom();
 			images.pop();
 			lblPreview.setIcon(new ImageIcon(images.peek()));
 			if(images.size() == 1) {
@@ -106,31 +113,25 @@ public class MainFrame extends JFrame {
 		});
 		btnMatrice.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_matrix.png")));
 		btnMatrice.setEnabled(false);
-		final JLabel lblZoom = new JLabel("Zoom (0%) :");
-		slrZoom.addChangeListener(new ChangeListener() {
+		btnPlus.addActionListener(new ActionListener() {
 
 			@Override
-			public final void stateChanged(final ChangeEvent event) {
-				try {
-					int zoomLevel = slrZoom.getValue();
-					lblZoom.setText("Zoom (" + zoomLevel + "%) :");
-					final BufferedImage image = images.pop();
-					final int newImageWidth = image.getWidth() * ++zoomLevel;
-					final int newImageHeight = image.getHeight() * zoomLevel;
-					final BufferedImage resizedImage = new BufferedImage(newImageWidth , newImageHeight, image.getType());
-					final Graphics2D graphics = resizedImage.createGraphics();
-					graphics.drawImage(image, 0, 0, newImageWidth , newImageHeight , null);
-					graphics.dispose();
-					lblPreview.setIcon(new ImageIcon(images.push(resizedImage)));
-				}
-				catch(final Exception ex) {
-					ex.printStackTrace();
-				}
+			public final void actionPerformed(final ActionEvent event) {
+				zoom += 10;
+				zoom();
 			}
 			
 		});
-		slrZoom.setValue(0);
-		slrZoom.setEnabled(false);
+		btnMoins.addActionListener(new ActionListener() {
+
+			@Override
+			public final void actionPerformed(final ActionEvent event) {
+				zoom -= 10;
+				zoom();
+			}
+			
+		});
+		btnMoins.setEnabled(false);
 		btnAnnuler.addActionListener(undo);
 		btnAnnuler.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_undo.png")));
 		btnAnnuler.setEnabled(false);
@@ -140,15 +141,14 @@ public class MainFrame extends JFrame {
 			groupLayout.createParallelGroup(Alignment.TRAILING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+					.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-						.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-							.addComponent(btnMatrice, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
-							.addGroup(Alignment.TRAILING, groupLayout.createParallelGroup(Alignment.LEADING)
-								.addComponent(lblZoom)
-								.addComponent(slrZoom, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)))
-						.addComponent(btnAnnuler, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE))
+					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+						.addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+						.addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+						.addComponent(btnPlus, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+						.addComponent(lblZoom, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE))
 					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
@@ -156,14 +156,16 @@ public class MainFrame extends JFrame {
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
+						.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addComponent(btnMatrice)
 							.addGap(18)
 							.addComponent(lblZoom)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(slrZoom, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED, 408, Short.MAX_VALUE)
+							.addComponent(btnPlus)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnMoins)
+							.addPreferredGap(ComponentPlacement.RELATED, 378, Short.MAX_VALUE)
 							.addComponent(btnAnnuler)))
 					.addContainerGap())
 		);
@@ -192,7 +194,6 @@ public class MainFrame extends JFrame {
 						images.clear();
 						lblPreview.setIcon(new ImageIcon(images.push(image)));
 						btnMatrice.setEnabled(true);
-						slrZoom.setEnabled(true);
 						MainFrame.this.setTitle("Traitement image - " + file.getPath());
 					}
 					catch(final Exception ex) {
@@ -244,7 +245,7 @@ public class MainFrame extends JFrame {
 		fichier.addSeparator();
 		fichier.add(enregistrerSous);
 		menu.add(fichier);
-		final JMenu edition = new JMenu("Édition");
+		final JMenu edition = new JMenu("Ã‰dition");
 		final JMenuItem annuler = new JMenuItem("Annuler");
 		annuler.addActionListener(undo);
 		annuler.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_undo.png")));
@@ -258,6 +259,8 @@ public class MainFrame extends JFrame {
 			if(size != 3 && size != 5) {
 				return;
 			}
+			zoom = 0;
+			zoom();
 			lblPreview.setIcon(new ImageIcon(images.push(new ConvolveOp(new Kernel(size, size, matrix)).filter(images.peek(), null))));
 			btnAnnuler.setEnabled(true);
 		}
@@ -266,4 +269,26 @@ public class MainFrame extends JFrame {
 			ex.printStackTrace();
 		}
 	}
+	
+	public final void zoom() {
+		lblZoom.setText("Zoom (" + zoom + "%) :");
+		if(zoom == 100) {
+			btnPlus.setEnabled(false);
+		}
+		else if(zoom == 0) {
+			btnMoins.setEnabled(false);
+			lblPreview.setIcon(new ImageIcon(images.peek()));
+			return;
+		}
+		if(zoom > 0) {
+			btnMoins.setEnabled(true);
+		}
+		if(zoom < 100) {
+			btnPlus.setEnabled(true);
+		}
+		final AffineTransform transform = new AffineTransform();
+	    transform.scale(zoom / 5, zoom / 5);
+	    lblPreview.setIcon(new ImageIcon(new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(images.peek(), null)));
+	}
+	
 }
