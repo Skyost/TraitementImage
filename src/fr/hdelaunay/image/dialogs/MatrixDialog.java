@@ -16,6 +16,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.frames.MainFrame;
+import fr.hdelaunay.image.matrix.Blurred;
+import fr.hdelaunay.image.matrix.Borders;
+import fr.hdelaunay.image.matrix.Contrast;
+import fr.hdelaunay.image.matrix.Embossed;
+import fr.hdelaunay.image.matrix.PredefinedMatrix;
 import fr.hdelaunay.image.utils.Utils;
 
 import java.awt.Component;
@@ -158,6 +163,22 @@ public class MatrixDialog extends JDialog {
 		});
 		enregistrerSous.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_saveas.png")));
 		fichier.add(enregistrerSous);
+		fichier.addSeparator();
+		final JMenu matricesPredefinies = new JMenu("Matrices prédéfinies");
+		for(final PredefinedMatrix matrix : new PredefinedMatrix[]{new Blurred(), new Borders(), new Contrast(), new Embossed()}) {
+			final JMenuItem menuMatrix = new JMenuItem(matrix.getName());
+			menuMatrix.addActionListener(new ActionListener() {
+
+				@Override
+				public final void actionPerformed(final ActionEvent event) {
+					new MatrixDialog(parent, matrix.getSize(), matrix.getMatrix()).setVisible(true);
+					MatrixDialog.this.dispose();
+				}
+				
+			});
+			matricesPredefinies.add(menuMatrix);
+		}
+		fichier.add(matricesPredefinies);
 		menu.add(fichier);
 		return menu;
 	}
