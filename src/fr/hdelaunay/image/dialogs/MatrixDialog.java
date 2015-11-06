@@ -4,14 +4,14 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import fr.hdelaunay.image.Main;
@@ -26,6 +26,7 @@ import fr.hdelaunay.image.utils.Utils;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -34,7 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class MatrixDialog extends JDialog {
+public class MatrixDialog extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -50,9 +51,11 @@ public class MatrixDialog extends JDialog {
 			this.dispose();
 		}
 		this.setTitle("Appliquer une matrice");
-		this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		this.setIconImage(Toolkit.getDefaultToolkit().getImage(Main.class.getResource(Main.RES_PACKAGE + "icon_app.png")));
 		this.setLocationRelativeTo(parent);
+		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.setResizable(false);
+		this.setType(Type.POPUP);
 		this.setJMenuBar(this.createMenu(parent));
 		final Container content = this.getContentPane();
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
@@ -61,11 +64,10 @@ public class MatrixDialog extends JDialog {
 		for(int i = 0; i != size; i++) {
 			final JPanel line = new JPanel();
 			for(int j = 0; j != size; j++) {
-				final JPanel panel = new JPanel();
-				final JSpinner spinner = new JSpinner();
-				spinner.setValue(matrix == null ? 0 : (int)matrix[index++]);
-				panel.add(spinner);
-				line.add(panel);
+				final JTextField value = new JTextField();
+				value.setText(String.valueOf(matrix == null ? 0f : matrix[index++]));
+				value.setColumns(5);
+				line.add(value);
 			}
 			content.add(line);
 		}
@@ -190,15 +192,15 @@ public class MatrixDialog extends JDialog {
 			if(!(component instanceof JPanel)) {
 				continue;
 			}
-			for(final Component spinner : ((JPanel)component).getComponents()) {
-				if(!(spinner instanceof JPanel)) {
+			for(final Component value : ((JPanel)component).getComponents()) {
+				if(!(value instanceof JTextField)) {
 					continue;
 				}
-				final Integer value = Utils.toInt(((JSpinner)((JPanel)spinner).getComponents()[0]).getValue().toString());
-				if(value == null) {
-					JOptionPane.showMessageDialog(MatrixDialog.this, "\"" + value + "\" n'est pas une valeur valide !", "Erreur !", JOptionPane.ERROR_MESSAGE);
+				final Float valueFloat = Utils.toFloat(((JTextField)value).getText());
+				if(valueFloat == null) {
+					JOptionPane.showMessageDialog(MatrixDialog.this, "\"" + valueFloat + "\" n'est pas une valeur valide !", "Erreur !", JOptionPane.ERROR_MESSAGE);
 				}
-				matrix[index++] = (float)value;
+				matrix[index++] = valueFloat;
 			}
 		}
 		return matrix;

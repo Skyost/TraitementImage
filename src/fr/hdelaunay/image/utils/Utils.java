@@ -15,6 +15,14 @@ public class Utils {
 		return null;
 	}
 	
+	public static final Float toFloat(final String value) {
+		try {
+			return Float.parseFloat(value);
+		}
+		catch(final Exception ex) {}
+		return null;
+	}
+	
 	public static final String joinFloats(final String joiner, final float[] floats) {
 		final StringBuilder builder = new StringBuilder();
 		for(final Object floatt : floats) {
