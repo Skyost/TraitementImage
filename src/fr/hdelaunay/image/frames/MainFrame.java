@@ -3,6 +3,7 @@ package fr.hdelaunay.image.frames;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics2D;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
@@ -11,6 +12,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Stack;
 
 import javax.imageio.ImageIO;
@@ -35,7 +38,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.dialogs.MatrixDialog;
 import fr.hdelaunay.image.utils.Utils;
-import java.awt.Toolkit;
 
 public class MainFrame extends JFrame {
 
@@ -43,10 +45,13 @@ public class MainFrame extends JFrame {
 
 	private final Stack<BufferedImage> images = new Stack<BufferedImage>();
 	private int zoom = 0;
+	
+	private final JMenu fichiersRecents = new JMenu("Fichiers récents");
+	
 	private final JLabel lblZoom = new JLabel("Zoom (" + zoom + "%) :");
 	private final JButton btnPlus = new JButton("Plus");
 	private final JButton btnMoins = new JButton("Moins");
-	
+
 	private final JLabel lblPreview = new JLabel();
 	private final JButton btnMatrice = new JButton("Appliquer matrice...");
 	private final JButton btnAnnuler = new JButton("Annuler");
@@ -58,8 +63,7 @@ public class MainFrame extends JFrame {
 			if(images.size() <= 1) {
 				return;
 			}
-			zoom = 0;
-			zoom();
+			zoom(0);
 			images.pop();
 			lblPreview.setIcon(new ImageIcon(images.peek()));
 			if(images.size() == 1) {
@@ -117,19 +121,17 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				zoom += 10;
-				zoom();
+				zoom(zoom + 10);
 			}
-			
+
 		});
 		btnMoins.addActionListener(new ActionListener() {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				zoom -= 10;
-				zoom();
+				zoom(zoom - 10);
 			}
-			
+
 		});
 		btnMoins.setEnabled(false);
 		btnAnnuler.addActionListener(undo);
@@ -137,38 +139,8 @@ public class MainFrame extends JFrame {
 		btnAnnuler.setEnabled(false);
 		final Container pane = this.getContentPane();
 		final GroupLayout groupLayout = new GroupLayout(pane);
-		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(Alignment.TRAILING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-						.addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-						.addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-						.addComponent(btnPlus, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-						.addComponent(lblZoom, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap())
-		);
-		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(btnMatrice)
-							.addGap(18)
-							.addComponent(lblZoom)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnPlus)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnMoins)
-							.addPreferredGap(ComponentPlacement.RELATED, 378, Short.MAX_VALUE)
-							.addComponent(btnAnnuler)))
-					.addContainerGap())
-		);
+		groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.TRAILING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false).addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(btnPlus, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(lblZoom, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)).addContainerGap()));
+		groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.LEADING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addGroup(groupLayout.createParallelGroup(Alignment.LEADING).addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE).addGroup(groupLayout.createSequentialGroup().addComponent(btnMatrice).addGap(18).addComponent(lblZoom).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnPlus).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnMoins).addPreferredGap(ComponentPlacement.RELATED, 378, Short.MAX_VALUE).addComponent(btnAnnuler))).addContainerGap()));
 		pane.setLayout(groupLayout);
 	}
 
@@ -185,20 +157,7 @@ public class MainFrame extends JFrame {
 				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
 				chooser.setMultiSelectionEnabled(false);
 				if(chooser.showOpenDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION) {
-					try {
-						final File file = chooser.getSelectedFile();
-						final BufferedImage image = ImageIO.read(file);
-						if(image == null) {
-							return;
-						}
-						images.clear();
-						lblPreview.setIcon(new ImageIcon(images.push(image)));
-						btnMatrice.setEnabled(true);
-						MainFrame.this.setTitle("Traitement image - " + file.getPath());
-					}
-					catch(final Exception ex) {
-						ex.printStackTrace();
-					}
+					open(chooser.getSelectedFile());
 				}
 			}
 
@@ -218,25 +177,7 @@ public class MainFrame extends JFrame {
 				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
 				chooser.setMultiSelectionEnabled(false);
 				if(chooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION) {
-					try {
-						String path = chooser.getSelectedFile().getPath();
-						if(!path.endsWith(".bmp")) {
-							path += ".bmp";
-						}
-						final File file = new File(path);
-						if(file.exists()) {
-							file.delete();
-						}
-						final BufferedImage image = new BufferedImage(lblPreview.getWidth(), lblPreview.getHeight(), BufferedImage.TYPE_INT_ARGB);
-						final Graphics2D graphics = image.createGraphics();
-						lblPreview.printAll(graphics);
-						graphics.dispose();
-						ImageIO.write(image, "BMP", file);
-						MainFrame.this.setTitle("Traitement image - " + path);
-					}
-					catch(final Exception ex) {
-						ex.printStackTrace();
-					}
+					save(chooser.getSelectedFile());
 				}
 			}
 
@@ -244,6 +185,9 @@ public class MainFrame extends JFrame {
 		enregistrerSous.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_saveas.png")));
 		fichier.addSeparator();
 		fichier.add(enregistrerSous);
+		fichier.addSeparator();
+		fichier.add(fichiersRecents);
+		refreshPaths();
 		menu.add(fichier);
 		final JMenu edition = new JMenu("Édition");
 		final JMenuItem annuler = new JMenuItem("Annuler");
@@ -253,14 +197,123 @@ public class MainFrame extends JFrame {
 		menu.add(edition);
 		return menu;
 	}
+	
+	public final void open(final File file) {
+		try {
+			if(!file.exists()) {
+				return;
+			}
+			final BufferedImage image = ImageIO.read(file);
+			if(image == null) {
+				return;
+			}
+			images.clear();
+			lblPreview.setIcon(new ImageIcon(images.push(image)));
+			btnMatrice.setEnabled(true);
+			final String path = file.getPath();
+			MainFrame.this.setTitle("Traitement image - " + path);
+			saveToHistory(path);
+		}
+		catch(final Exception ex) {
+			JOptionPane.showMessageDialog(this, "<html>Impossible d'appliquer ce fichier !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
+			ex.printStackTrace();
+		}
+	}
+	
+	public final void save(File file) {
+		try {
+			String path = file.getPath();
+			if(!path.endsWith(".bmp")) {
+				path += ".bmp";
+			}
+			file = new File(path);
+			if(file.exists()) {
+				file.delete();
+			}
+			final BufferedImage image = new BufferedImage(lblPreview.getWidth(), lblPreview.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			final Graphics2D graphics = image.createGraphics();
+			lblPreview.printAll(graphics);
+			graphics.dispose();
+			ImageIO.write(image, "BMP", file);
+			MainFrame.this.setTitle("Traitement image - " + path);
+			saveToHistory(path);
+		}
+		catch(final Exception ex) {
+			JOptionPane.showMessageDialog(MainFrame.this, "<html>Impossible d'enregistrer ce fichier !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
+			ex.printStackTrace();
+		}
+	}
+	
+	private final void saveToHistory(final String path) {
+		if(Main.settings.lastFiles.contains(path)) {
+			Main.settings.lastFiles.removeAll(Collections.singleton(path));
+		}
+		try {
+			Main.settings.lastFiles.add(0, path);
+			Main.settings.save();
+			refreshPaths();
+		}
+		catch(final Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private final void refreshPaths() {
+		boolean needToSave = false;
+		fichiersRecents.removeAll();
+		for(final String lastFile : new ArrayList<String>(Main.settings.lastFiles)) {
+			final File file = new File(lastFile);
+			if(!file.exists()) {
+				Main.settings.lastFiles.removeAll(Collections.singleton(lastFile));
+				continue;
+			}
+			final JMenuItem lastFileItem = new JMenuItem(lastFile);
+			lastFileItem.addActionListener(new ActionListener() {
 
+				@Override
+				public final void actionPerformed(final ActionEvent event) {
+					open(file);
+				}
+					
+			});
+			fichiersRecents.add(lastFileItem);
+		}
+		if(needToSave) {
+			try {
+				Main.settings.save();
+			}
+			catch(final Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		if(fichiersRecents.getMenuComponentCount() > 0) {
+			fichiersRecents.addSeparator();
+			final JMenuItem vider = new JMenuItem("Vider la liste");
+			vider.addActionListener(new ActionListener() {
+				
+				@Override
+				public final void actionPerformed(final ActionEvent event) {
+					try {
+						Main.settings.lastFiles.clear();
+						Main.settings.save();
+						refreshPaths();
+					}
+					catch(final Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+				
+			});
+			fichiersRecents.add(vider);
+		}
+	}
+	
 	public final void applyMatrix(final float[] matrix, final int size) {
 		try {
 			if(size != 3 && size != 5) {
 				return;
 			}
-			zoom = 0;
-			zoom();
+			zoom(0);
 			lblPreview.setIcon(new ImageIcon(images.push(new ConvolveOp(new Kernel(size, size, matrix)).filter(images.peek(), null))));
 			btnAnnuler.setEnabled(true);
 		}
@@ -269,8 +322,12 @@ public class MainFrame extends JFrame {
 			ex.printStackTrace();
 		}
 	}
-	
-	public final void zoom() {
+
+	public final void zoom(final int zoom) {
+		if(zoom < 0 || zoom > 100) {
+			return;
+		}
+		this.zoom = zoom;
 		lblZoom.setText("Zoom (" + zoom + "%) :");
 		if(zoom == 100) {
 			btnPlus.setEnabled(false);
@@ -287,8 +344,8 @@ public class MainFrame extends JFrame {
 			btnPlus.setEnabled(true);
 		}
 		final AffineTransform transform = new AffineTransform();
-	    transform.scale(zoom / 5, zoom / 5);
-	    lblPreview.setIcon(new ImageIcon(new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(images.peek(), null)));
+		transform.scale(zoom / 5, zoom / 5);
+		lblPreview.setIcon(new ImageIcon(new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(images.peek(), null)));
 	}
-	
+
 }

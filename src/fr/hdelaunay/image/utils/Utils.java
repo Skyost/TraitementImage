@@ -1,5 +1,10 @@
 package fr.hdelaunay.image.utils;
 
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 public class Utils {
 	
 	public static final Integer toInt(final String value) {
@@ -17,6 +22,10 @@ public class Utils {
 		}
 		builder.setLength(builder.length() - joiner.length());
 		return builder.toString();
+	}
+	
+	public static final File getParentFolder() throws UnsupportedEncodingException {
+		return new File(URLDecoder.decode(ClassLoader.getSystemClassLoader().getResource(".").getPath(), StandardCharsets.UTF_8.toString()));
 	}
 
 }
