@@ -201,6 +201,7 @@ public class MainFrame extends JFrame {
 	public final void open(final File file) {
 		try {
 			if(!file.exists()) {
+				saveToHistory(file.getPath());
 				return;
 			}
 			final BufferedImage image = ImageIO.read(file);
@@ -245,17 +246,24 @@ public class MainFrame extends JFrame {
 	}
 	
 	private final void saveToHistory(final String path) {
+		boolean needSoSave = false;
 		if(Main.settings.lastFiles.contains(path)) {
 			Main.settings.lastFiles.removeAll(Collections.singleton(path));
+			needSoSave = true;
 		}
-		try {
+		if(new File(path).exists()) {
 			Main.settings.lastFiles.add(0, path);
-			Main.settings.save();
-			refreshPaths();
+			needSoSave = true;
 		}
-		catch(final Exception ex) {
-			ex.printStackTrace();
+		if(needSoSave) {
+			try {
+				Main.settings.save();
+			}
+			catch(final Exception ex) {
+				ex.printStackTrace();
+			}
 		}
+		refreshPaths();
 	}
 	
 	private final void refreshPaths() {
@@ -265,6 +273,7 @@ public class MainFrame extends JFrame {
 			final File file = new File(lastFile);
 			if(!file.exists()) {
 				Main.settings.lastFiles.removeAll(Collections.singleton(lastFile));
+				needToSave = true;
 				continue;
 			}
 			final JMenuItem lastFileItem = new JMenuItem(lastFile);

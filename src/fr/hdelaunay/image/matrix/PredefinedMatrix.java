@@ -1,9 +1,13 @@
 package fr.hdelaunay.image.matrix;
 
-public interface PredefinedMatrix {
+public abstract class PredefinedMatrix {
 	
-	public String getName();
-	public short getSize();
-	public float[] getMatrix();
+	public abstract String getName();
+	
+	public final int getSize() {
+		return (int)Math.sqrt(getMatrix().length);
+	}
+	
+	public abstract float[] getMatrix();
 
 }
