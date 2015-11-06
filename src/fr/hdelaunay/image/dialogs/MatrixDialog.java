@@ -51,7 +51,7 @@ public class MatrixDialog extends JFrame {
 			this.dispose();
 		}
 		this.setTitle("Appliquer une matrice");
-		this.setIconImage(Toolkit.getDefaultToolkit().getImage(Main.class.getResource(Main.RES_PACKAGE + "icon_app.png")));
+		this.setIconImage(Toolkit.getDefaultToolkit().getImage(Main.class.getResource(Main.RES_PACKAGE + "icon_matrix.png")));
 		this.setLocationRelativeTo(parent);
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.setResizable(false);
