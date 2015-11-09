@@ -125,6 +125,7 @@ public class MainFrame extends JFrame {
 			}
 
 		});
+		btnPlus.setEnabled(false);
 		btnMoins.addActionListener(new ActionListener() {
 
 			@Override
@@ -214,6 +215,7 @@ public class MainFrame extends JFrame {
 			final String path = file.getPath();
 			MainFrame.this.setTitle("Traitement image - " + path);
 			saveToHistory(path);
+			zoom(0);
 		}
 		catch(final Exception ex) {
 			JOptionPane.showMessageDialog(this, "<html>Impossible d'appliquer ce fichier !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
@@ -340,8 +342,10 @@ public class MainFrame extends JFrame {
 		lblZoom.setText("Zoom (" + zoom + "%) :");
 		if(zoom == 100) {
 			btnPlus.setEnabled(false);
+			btnMoins.setEnabled(false);
 		}
 		else if(zoom == 0) {
+			btnPlus.setEnabled(true);
 			btnMoins.setEnabled(false);
 			lblPreview.setIcon(new ImageIcon(images.peek()));
 			return;
