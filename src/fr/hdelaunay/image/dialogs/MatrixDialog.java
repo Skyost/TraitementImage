@@ -16,10 +16,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.frames.MainFrame;
-import fr.hdelaunay.image.matrix.Blurred;
-import fr.hdelaunay.image.matrix.Borders;
-import fr.hdelaunay.image.matrix.Contrast;
-import fr.hdelaunay.image.matrix.Embossed;
 import fr.hdelaunay.image.matrix.PredefinedMatrix;
 import fr.hdelaunay.image.utils.Utils;
 
@@ -167,7 +163,7 @@ public class MatrixDialog extends JFrame {
 		fichier.add(enregistrerSous);
 		fichier.addSeparator();
 		final JMenu matricesPredefinies = new JMenu("Matrices prédéfinies");
-		for(final PredefinedMatrix matrix : new PredefinedMatrix[]{new Blurred(), new Borders(), new Contrast(), new Embossed()}) {
+		for(final PredefinedMatrix matrix : PredefinedMatrix.getPredefinedMatrix()) {
 			final JMenuItem menuMatrix = new JMenuItem(matrix.getName());
 			menuMatrix.addActionListener(new ActionListener() {
 
