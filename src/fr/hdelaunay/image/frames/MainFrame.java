@@ -254,21 +254,21 @@ public class MainFrame extends JFrame {
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
 				final JFileChooser chooser = new JFileChooser();
-				chooser.setFileFilter(new FileNameExtensionFilter("Fichier bitmap (*.bmp)", "bmp"));
+				chooser.setFileFilter(new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
 				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
 				chooser.setMultiSelectionEnabled(false);
 				if(chooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION) {
 					try {
 						File file = chooser.getSelectedFile();
 						String path = file.getPath();
-						if(!path.endsWith(".bmp")) {
-							path += ".bmp";
+						if(!path.endsWith(".png")) {
+							path += ".png";
 						}
 						file = new File(path);
 						if(file.exists()) {
 							file.delete();
 						}
-						ImageIO.write(previewAsBufferedImage(), "BMP", file);
+						ImageIO.write(previewAsBufferedImage(), "PNG", file);
 					}
 					catch(final Exception ex) {
 						JOptionPane.showMessageDialog(MainFrame.this, "<html>Impossible d'enregistrer la prévisualisation !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
@@ -278,6 +278,7 @@ public class MainFrame extends JFrame {
 			}
 			
 		});
+		enregistrerPrevisualisation.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_open.png")));
 		menu.add(enregistrerPrevisualisation);
 		return menu;
 	}
