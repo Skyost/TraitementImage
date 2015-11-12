@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
@@ -44,7 +45,7 @@ public class AppSettings {
 			return;
 		}
 		boolean needToSave = false;
-		final JsonObject object = JsonValue.readFrom(Files.readAllLines(Paths.get(file.getPath()), StandardCharsets.UTF_8).get(0)).asObject();
+		final JsonObject object = Json.parse(Files.readAllLines(Paths.get(file.getPath()), StandardCharsets.UTF_8).get(0)).asObject();
 		for(final Field field : this.getClass().getFields()) {
 			final SerializationOptions options = this.getAnnotation(field);
 			if(options == null) {

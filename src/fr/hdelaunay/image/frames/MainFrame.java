@@ -28,6 +28,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JButton;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -39,21 +40,24 @@ import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.dialogs.MatrixDialog;
 import fr.hdelaunay.image.utils.Utils;
 
+import javax.swing.JCheckBox;
+
 public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
+	private BufferedImage antialiasing;
 	private final Stack<BufferedImage> images = new Stack<BufferedImage>();
-	private int zoom = 0;
+	private short zoom = 0;
 	
 	private final JMenu fichiersRecents = new JMenu("Fichiers récents");
 	
+	private final JLabel lblPreview = new JLabel();
+	private final JButton btnMatrice = new JButton("Appliquer matrice...");
 	private final JLabel lblZoom = new JLabel("Zoom (" + zoom + "%) :");
 	private final JButton btnPlus = new JButton("Plus");
 	private final JButton btnMoins = new JButton("Moins");
-
-	private final JLabel lblPreview = new JLabel();
-	private final JButton btnMatrice = new JButton("Appliquer matrice...");
+	private final JCheckBox chckbxAntialiasing = new JCheckBox("Anti-crénelage");
 	private final JButton btnAnnuler = new JButton("Annuler");
 
 	private final ActionListener undo = new ActionListener() {
@@ -135,13 +139,56 @@ public class MainFrame extends JFrame {
 
 		});
 		btnMoins.setEnabled(false);
+		chckbxAntialiasing.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(final ActionEvent event) {
+				applyAntialiasing(chckbxAntialiasing.isSelected());
+			}
+			
+		});
+		chckbxAntialiasing.setEnabled(false);
 		btnAnnuler.addActionListener(undo);
 		btnAnnuler.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_undo.png")));
 		btnAnnuler.setEnabled(false);
 		final Container pane = this.getContentPane();
 		final GroupLayout groupLayout = new GroupLayout(pane);
-		groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.TRAILING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false).addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(btnPlus, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(lblZoom, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)).addContainerGap()));
-		groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.LEADING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addGroup(groupLayout.createParallelGroup(Alignment.LEADING).addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE).addGroup(groupLayout.createSequentialGroup().addComponent(btnMatrice).addGap(18).addComponent(lblZoom).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnPlus).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnMoins).addPreferredGap(ComponentPlacement.RELATED, 378, Short.MAX_VALUE).addComponent(btnAnnuler))).addContainerGap()));
+		groupLayout.setHorizontalGroup(
+			groupLayout.createParallelGroup(Alignment.TRAILING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+						.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+							.addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+							.addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+							.addComponent(btnPlus, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+							.addComponent(lblZoom, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE))
+						.addComponent(chckbxAntialiasing))
+					.addContainerGap())
+		);
+		groupLayout.setVerticalGroup(
+			groupLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+						.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(btnMatrice)
+							.addGap(18)
+							.addComponent(lblZoom)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnPlus)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnMoins)
+							.addGap(18)
+							.addComponent(chckbxAntialiasing)
+							.addPreferredGap(ComponentPlacement.RELATED, 338, Short.MAX_VALUE)
+							.addComponent(btnAnnuler)))
+					.addContainerGap())
+		);
 		pane.setLayout(groupLayout);
 	}
 
@@ -199,6 +246,42 @@ public class MainFrame extends JFrame {
 		return menu;
 	}
 	
+	public final JPopupMenu createLabelMenu() {
+		final JPopupMenu menu = new JPopupMenu();
+		final JMenuItem enregistrerPrevisualisation = new JMenuItem("Enregistrer la prévisualisation...");
+		enregistrerPrevisualisation.addActionListener(new ActionListener() {
+
+			@Override
+			public final void actionPerformed(final ActionEvent event) {
+				final JFileChooser chooser = new JFileChooser();
+				chooser.setFileFilter(new FileNameExtensionFilter("Fichier bitmap (*.bmp)", "bmp"));
+				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
+				chooser.setMultiSelectionEnabled(false);
+				if(chooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION) {
+					try {
+						File file = chooser.getSelectedFile();
+						String path = file.getPath();
+						if(!path.endsWith(".bmp")) {
+							path += ".bmp";
+						}
+						file = new File(path);
+						if(file.exists()) {
+							file.delete();
+						}
+						ImageIO.write(previewAsBufferedImage(), "BMP", file);
+					}
+					catch(final Exception ex) {
+						JOptionPane.showMessageDialog(MainFrame.this, "<html>Impossible d'enregistrer la prévisualisation !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
+						ex.printStackTrace();
+					}
+				}
+			}
+			
+		});
+		menu.add(enregistrerPrevisualisation);
+		return menu;
+	}
+	
 	public final void open(final File file) {
 		try {
 			if(!file.exists()) {
@@ -216,6 +299,7 @@ public class MainFrame extends JFrame {
 			MainFrame.this.setTitle("Traitement image - " + path);
 			saveToHistory(path);
 			zoom(0);
+			lblPreview.setComponentPopupMenu(this.createLabelMenu());
 		}
 		catch(final Exception ex) {
 			JOptionPane.showMessageDialog(this, "<html>Impossible d'appliquer ce fichier !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
@@ -233,11 +317,7 @@ public class MainFrame extends JFrame {
 			if(file.exists()) {
 				file.delete();
 			}
-			final BufferedImage image = new BufferedImage(lblPreview.getWidth(), lblPreview.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			final Graphics2D graphics = image.createGraphics();
-			lblPreview.printAll(graphics);
-			graphics.dispose();
-			ImageIO.write(image, "BMP", file);
+			ImageIO.write(images.peek(), "BMP", file);
 			MainFrame.this.setTitle("Traitement image - " + path);
 			saveToHistory(path);
 		}
@@ -245,6 +325,29 @@ public class MainFrame extends JFrame {
 			JOptionPane.showMessageDialog(MainFrame.this, "<html>Impossible d'enregistrer ce fichier !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
 			ex.printStackTrace();
 		}
+	}
+	
+	public final void applyAntialiasing(final boolean apply) {
+		if(apply) {
+			antialiasing = previewAsBufferedImage();
+			lblPreview.setIcon(new ImageIcon(new ConvolveOp(new Kernel(3, 3, new float[]{
+					0f, .2f, 0f,
+					.2f, .2f, .2f,
+					0f, .2f, 0f
+			})).filter(antialiasing, null)));
+		}
+		else {
+			lblPreview.setIcon(new ImageIcon(antialiasing));
+			antialiasing = null;
+		}
+	}
+	
+	public final BufferedImage previewAsBufferedImage() {
+		final BufferedImage image = new BufferedImage(lblPreview.getWidth(), lblPreview.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		final Graphics2D graphics = image.createGraphics();
+		lblPreview.printAll(graphics);
+		graphics.dispose();
+		return image;
 	}
 	
 	private final void saveToHistory(final String path) {
@@ -338,7 +441,7 @@ public class MainFrame extends JFrame {
 		if(zoom < 0 || zoom > 100) {
 			return;
 		}
-		this.zoom = zoom;
+		this.zoom = (short)zoom;
 		lblZoom.setText("Zoom (" + zoom + "%) :");
 		if(zoom == 100) {
 			btnPlus.setEnabled(false);
@@ -347,18 +450,27 @@ public class MainFrame extends JFrame {
 		else if(zoom == 0) {
 			btnPlus.setEnabled(true);
 			btnMoins.setEnabled(false);
+			if(antialiasing != null) {
+				applyAntialiasing(false);
+			}
+			chckbxAntialiasing.setEnabled(false);
+			chckbxAntialiasing.setSelected(false);
 			lblPreview.setIcon(new ImageIcon(images.peek()));
 			return;
 		}
 		if(zoom > 0) {
 			btnMoins.setEnabled(true);
+			chckbxAntialiasing.setEnabled(true);
 		}
 		if(zoom < 100) {
 			btnPlus.setEnabled(true);
 		}
 		final AffineTransform transform = new AffineTransform();
-		transform.scale(zoom / 5, zoom / 5);
+		transform.scale(zoom * .15f, zoom * .15f);
 		lblPreview.setIcon(new ImageIcon(new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(images.peek(), null)));
+		if(antialiasing != null) {
+			applyAntialiasing(true);
+		}
 	}
-
+	
 }
