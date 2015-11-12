@@ -42,6 +42,10 @@ import fr.hdelaunay.image.utils.Utils;
 
 import javax.swing.JCheckBox;
 
+/**
+ * TODO: Ajout de documentation sur les méthodes.
+ */
+
 public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -331,6 +335,7 @@ public class MainFrame extends JFrame {
 	public final void applyAntialiasing(final boolean apply) {
 		if(apply) {
 			antialiasing = previewAsBufferedImage();
+			/* https://code.google.com/p/raytraceplusplus/wiki/AntiAliasing */
 			lblPreview.setIcon(new ImageIcon(new ConvolveOp(new Kernel(3, 3, new float[]{
 					0f, .2f, 0f,
 					.2f, .2f, .2f,
