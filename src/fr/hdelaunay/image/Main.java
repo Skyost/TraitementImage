@@ -13,12 +13,19 @@ public class Main {
 	
 	public static AppSettings settings;
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		try {
 			settings = new AppSettings(new File(Utils.getParentFolder(), "settings.json"));
 			settings.load();
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			new MainFrame().setVisible(true);
+			final MainFrame main = new MainFrame();
+			main.setVisible(true);
+			if(args.length > 0) {
+				final File file = new File(args[0]);
+				if(file.exists()) {
+					main.open(file);
+				}
+			}
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
