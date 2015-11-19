@@ -89,6 +89,7 @@ public class MainFrame extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setJMenuBar(this.createMenu());
 		final JScrollPane scrollBar = new JScrollPane(lblPreview);
+		lblPreview.setVerticalAlignment(JLabel.TOP);
 		btnMatrice.addActionListener(new ActionListener() {
 
 			@Override
