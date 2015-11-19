@@ -31,15 +31,40 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+/**
+ * La boîte de dialogue permettant de créer des matrices.
+ * 
+ * @author Hugo Delaunay.
+ */
+
 public class MatrixDialog extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	
+	/**
+	 * La taille de cette matrice (on assume que cette taille est la même pour la hauteur comme pour la largeur).
+	 */
+	
 	private final int size;
+	
+	/**
+	 * Création d'une nouvelle instance de <i>MatrixDialog</i> (la boîte de dialogue permettant de créer des matrices, ici vierge).
+	 * 
+	 * @param parent Le parent (pour appliquer cette matrice).
+	 * @param size La taille de cette matrice (on assume que cette taille est la même pour la hauteur comme pour la largeur).
+	 */
 	
 	public MatrixDialog(final MainFrame parent, final int size) {
 		this(parent, size, null);
 	}
+	
+	/**
+	 * Création d'une nouvelle instance de <i>MatrixDialog</i> (la boîte de dialogue permettant de créer des matrices).
+	 * 
+	 * @param parent Le parent (pour appliquer cette matrice).
+	 * @param size La taille de cette matrice (on assume que cette taille est la même pour la hauteur comme pour la largeur).
+	 * @param matrix La matrice qui sera chargée par la boîte de dialogue.
+	 */
 	
 	public MatrixDialog(final MainFrame parent, final int size, final float[] matrix) {
 		this.size = size;
@@ -94,6 +119,14 @@ public class MatrixDialog extends JFrame {
 		content.add(buttons);
 		this.pack();
 	}
+	
+	/**
+	 * Création du menu pour le GUI.
+	 * 
+	 * @param parent Le parent (pour appliquer cette matrice).
+	 * 
+	 * @return Le menu.
+	 */
 	
 	private JMenuBar createMenu(final MainFrame parent) {
 		final JMenuBar menu = new JMenuBar();
@@ -180,6 +213,12 @@ public class MatrixDialog extends JFrame {
 		menu.add(fichier);
 		return menu;
 	}
+	
+	/**
+	 * Retourne la matrice sous forme de tableau à une dimension.
+	 * 
+	 * @return La matrice sous forme de tableau à une dimension. 
+	 */
 	
 	public final float[] getMatrix() {
 		final float[] matrix = new float[size * size];

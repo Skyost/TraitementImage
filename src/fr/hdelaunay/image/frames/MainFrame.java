@@ -43,7 +43,7 @@ import fr.hdelaunay.image.utils.Utils;
 import javax.swing.JCheckBox;
 
 /**
- * Fenêtre principale.
+ * La fenêtre principale.
  * 
  * @author Hugo Delaunay.
  */
