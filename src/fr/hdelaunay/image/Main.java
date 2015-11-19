@@ -13,6 +13,15 @@ public class Main {
 	
 	public static AppSettings settings;
 
+	/**
+	 * Première méthode éxecutée par le programme.
+	 * 
+	 * @param args Liste des arguments possibles :
+	 * <br><table><tr><td><b>Index</b></td><td><b>Explications</b></td></tr>
+	 * <tr><td>1</td><td>Le fichier à ouvrir.</td></tr>
+	 * </table>
+	 */
+	
 	public static void main(final String[] args) {
 		try {
 			settings = new AppSettings(new File(Utils.getParentFolder(), "settings.json"));

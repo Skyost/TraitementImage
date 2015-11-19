@@ -43,19 +43,39 @@ import fr.hdelaunay.image.utils.Utils;
 import javax.swing.JCheckBox;
 
 /**
- * TODO: Ajout de documentation sur les méthodes.
+ * Fenêtre principale.
+ * 
+ * @author Hugo Delaunay.
  */
 
 public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Non nul si l'antialiasing est activé et que le zoom est supérieur à zéro.
+	 * <br>Si non nul, contient l'image sans filtre d'antialiasing.
+	 */
+	
 	private BufferedImage antialiasing;
+	
+	/**
+	 * L'historique des images (incrémenté à chaque fois qu'un filtre est appliqué.
+	 */
+	
 	private final Stack<BufferedImage> images = new Stack<BufferedImage>();
+	
+	/**
+	 * Le zoom actuel (0 <= zoom <= 100).
+	 */
+	
 	private short zoom = 0;
 	
-	private final JMenu fichiersRecents = new JMenu("Fichiers récents");
+	/*
+	 * Différents composants du GUI.
+	 */
 	
+	private final JMenu fichiersRecents = new JMenu("Fichiers récents");
 	private final JLabel lblPreview = new JLabel();
 	private final JButton btnMatrice = new JButton("Appliquer matrice...");
 	private final JLabel lblZoom = new JLabel("Zoom (" + zoom + "%) :");
@@ -64,6 +84,10 @@ public class MainFrame extends JFrame {
 	private final JCheckBox chckbxAntialiasing = new JCheckBox("Anti-crénelage");
 	private final JButton btnAnnuler = new JButton("Annuler");
 
+	/**
+	 * Le code éxecuté lorsque l'on cliqué sur le bouton Annuler ou sur le menu Édition → Annuler.
+	 */
+	
 	private final ActionListener undo = new ActionListener() {
 
 		@Override
@@ -80,6 +104,10 @@ public class MainFrame extends JFrame {
 		}
 
 	};
+	
+	/**
+	 * Création d'une nouvelle instance de <i>MainFrame</i> (la fenêtre principale).
+	 */
 
 	public MainFrame() {
 		this.setTitle("Traitement image");
@@ -196,6 +224,12 @@ public class MainFrame extends JFrame {
 		);
 		pane.setLayout(groupLayout);
 	}
+	
+	/**
+	 * Création du menu pour le GUI.
+	 * 
+	 * @return Le menu.
+	 */
 
 	private final JMenuBar createMenu() {
 		final JMenuBar menu = new JMenuBar();
@@ -251,6 +285,12 @@ public class MainFrame extends JFrame {
 		return menu;
 	}
 	
+	/**
+	 * Création du menu pour le label de prévisualisation.
+	 * 
+	 * @return Le menu.
+	 */
+	
 	public final JPopupMenu createLabelMenu() {
 		final JPopupMenu menu = new JPopupMenu();
 		final JMenuItem enregistrerPrevisualisation = new JMenuItem("Enregistrer la prévisualisation...");
@@ -288,6 +328,12 @@ public class MainFrame extends JFrame {
 		return menu;
 	}
 	
+	/**
+	 * Ouvre un fichier (doit être une image BMP).
+	 * 
+	 * @param file Le fichier.
+	 */
+	
 	public final void open(final File file) {
 		try {
 			if(!file.exists()) {
@@ -313,6 +359,12 @@ public class MainFrame extends JFrame {
 		}
 	}
 	
+	/**
+	 * Enregistrement de l'élément qui se situe au dessus de la pile (champ <i>images</i>) dans un fichier.
+	 * 
+	 * @param file Le fichier.
+	 */
+	
 	public final void save(File file) {
 		try {
 			String path = file.getPath();
@@ -333,6 +385,13 @@ public class MainFrame extends JFrame {
 		}
 	}
 	
+	/**
+	 * Application ou non d'un filtre d'antialisating.
+	 * 
+	 * @param apply </i>true</i> Application du filtre.
+	 * <br><i>false</i> Enlèvement de l'antialiasing.
+	 */
+	
 	public final void applyAntialiasing(final boolean apply) {
 		if(apply) {
 			antialiasing = previewAsBufferedImage();
@@ -349,6 +408,12 @@ public class MainFrame extends JFrame {
 		}
 	}
 	
+	/**
+	 * Retourne la prévisualisation (champ <i>lblPreview</i>) en <i>BufferedImage</i>.
+	 * 
+	 * @return La prévisualisation en <i>BufferedImage</i>.
+	 */
+	
 	public final BufferedImage previewAsBufferedImage() {
 		final BufferedImage image = new BufferedImage(lblPreview.getWidth(), lblPreview.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		final Graphics2D graphics = image.createGraphics();
@@ -356,6 +421,12 @@ public class MainFrame extends JFrame {
 		graphics.dispose();
 		return image;
 	}
+	
+	/**
+	 * Enregistre le chemin dans l'historique.
+	 * 
+	 * @param path Le chemin.
+	 */
 	
 	private final void saveToHistory(final String path) {
 		boolean needSoSave = false;
@@ -377,6 +448,10 @@ public class MainFrame extends JFrame {
 		}
 		refreshPaths();
 	}
+	
+	/**
+	 * Rafraichissement des chemins (et donc du menu).
+	 */
 	
 	private final void refreshPaths() {
 		boolean needToSave = false;
@@ -429,6 +504,13 @@ public class MainFrame extends JFrame {
 		}
 	}
 	
+	/**
+	 * Application d'une matrice.
+	 * 
+	 * @param matrix La matrice.
+	 * @param size La taille de cette matrice (on assume que cette taille est la même pour la hauteur comme pour la largeur).
+	 */
+	
 	public final void applyMatrix(final float[] matrix, final int size) {
 		try {
 			if(size != 3 && size != 5) {
@@ -443,6 +525,12 @@ public class MainFrame extends JFrame {
 			ex.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Zoom sur la prévisualisation et application de l'antialiasing en conséquence (si sélectionné).
+	 * 
+	 * @param zoom Le zoom (0 <= zoom <= 100).
+	 */
 
 	public final void zoom(final int zoom) {
 		if(zoom < 0 || zoom > 100) {

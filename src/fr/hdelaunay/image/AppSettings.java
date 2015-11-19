@@ -20,6 +20,12 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
+/**
+ * Provient de https://github.com/Skyost/Algogo/.
+ * 
+ * @author Hugo Delaunay.
+ */
+
 public class AppSettings {
 	
 	@SerializationOptions(name = "last-files")
@@ -27,19 +33,45 @@ public class AppSettings {
 	
 	private transient File file;
 	
+	/**
+	 * Création d'une nouvelle instance d'<i>AppSettings</i>.
+	 * 
+	 * @param file Le fichier de paramètres.
+	 */
+	
 	public AppSettings(final File file) {
 		this.file = file;
 	}
+	
+	/**
+	 * Retourne le fichier utilisé pour enregistrer les paramètres.
+	 * 
+	 * @return Le fichier utilisé pour enregistrer les paramètres.
+	 */
 	
 	public final File getFile() {
 		return file;
 	}
 	
+	/**
+	 * Place le fichier qui sera utilisé pour enregistrer les paramètres.
+	 * 
+	 * @param file Le fichier qui sera utilisé pour enregistrer les paramètres.
+	 */
+	
 	public final void setFile(final File file) {
 		this.file = file;
 	}
 	
-	public final void load() throws IOException, IllegalArgumentException, IllegalAccessException {
+	/**
+	 * Chargement des paramètres depuis le fichier.
+	 * <br>Si certains paramètres n'existent pas, ils seront enregistrés.
+	 * 
+	 * @throws IOException Si une erreur intervient pendant l'accès au fichier.
+	 * @throws IllegalAccessException Si une erreur intervient pendant l'accès aux champs.
+	 */
+	
+	public final void load() throws IOException, IllegalAccessException {
 		if(!file.exists()) {
 			this.save();
 			return;
@@ -70,7 +102,14 @@ public class AppSettings {
 		}
 	}
 	
-	public final void save() throws IOException, IllegalArgumentException, IllegalAccessException {
+	/**
+	 * Enregistrement des paramètres dans le fichier.
+	 * 
+	 * @throws IOException Si une erreur intervient pendant l'accès au fichier.
+	 * @throws IllegalAccessException Si une erreur intervient pendant l'accès aux champs.
+	 */
+	
+	public final void save() throws IOException, IllegalAccessException {
 		final JsonObject object = new JsonObject();
 		for(final Field field : this.getClass().getFields()) {
 			final SerializationOptions options = this.getAnnotation(field);
@@ -92,6 +131,14 @@ public class AppSettings {
 		Files.write(Paths.get(file.getPath()), object.toString().getBytes());
 	}
 	
+	/**
+	 * Retourne l'annotation d'un champ (si il n'est pas <i>transient</i>).
+	 * 
+	 * @param field Le champ.
+	 * 
+	 * @return L'annotation de ce champ, ou <i>null</i> si elle n'est pas disponible ou que le champ est <i>transient</i>.
+	 */
+	
 	private final SerializationOptions getAnnotation(final Field field) {
 		if(Modifier.isTransient(field.getModifiers())) {
 			return null;
@@ -99,6 +146,10 @@ public class AppSettings {
 		final SerializationOptions options = field.getAnnotation(SerializationOptions.class);
 		return options;
 	}
+	
+	/**
+	 * Utilisé pour donner des paramètres personnalisés aux champs lors de la sérialisation.
+	 */
 	
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.FIELD)
