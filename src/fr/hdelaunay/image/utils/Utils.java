@@ -10,7 +10,7 @@ public class Utils {
 	/**
 	 * Conversion d'un <i>String</i> en <i>Integer</i>.
 	 * 
-	 * @param value La chaîne <i>String</i>.
+	 * @param value La chaÃ®ne <i>String</i>.
 	 * 
 	 * @return Le nombre <i>Integer</i>.
 	 */
@@ -26,9 +26,9 @@ public class Utils {
 	/**
 	 * Conversion d'un <i>String</i> en <i>Float</i>.
 	 * 
-	 * @param value La chaîne <i>String</i>.
+	 * @param value La chaÃ®ne <i>String</i>.
 	 * 
-	 * @return Le nombre à virgule flottante <i>Float</i>.
+	 * @return Le nombre Ã  virgule flottante <i>Float</i>.
 	 */
 	
 	public static final Float toFloat(final String value) {
@@ -40,12 +40,12 @@ public class Utils {
 	}
 	
 	/**
-	 * Joint des <i>float</i> par un caractère et retourne la chaîne ainsi créée.
+	 * Joint des <i>float</i> par un caractÃ¨re et retourne la chaÃ®ne ainsi crÃ©Ã©e.
 	 * 
-	 * @param joiner Le(s) caractère(s).
+	 * @param joiner Le(s) caractÃ¨re(s).
 	 * @param floats Les <i>float</i>.
 	 * 
-	 * @return La chaîne de <i>float</i>.
+	 * @return La chaÃ®ne de <i>float</i>.
 	 */
 	
 	public static final String joinFloats(final String joiner, final float... floats) {
@@ -60,9 +60,9 @@ public class Utils {
 	/**
 	 * Provient de https://github.com/Skyost/Algogo/.
 	 * 
-	 * @return Le répertoire dans lequel le programme est éxecuté.
+	 * @return Le rÃ©pertoire dans lequel le programme est Ã©xecutÃ©.
 	 * 
-	 * @throws UnsupportedEncodingException Si l'encodage n'est pas supporté.
+	 * @throws UnsupportedEncodingException Si l'encodage n'est pas supportÃ©.
 	 */
 	
 	public static final File getParentFolder() throws UnsupportedEncodingException {

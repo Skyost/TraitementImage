@@ -34,9 +34,9 @@ public class AppSettings {
 	private transient File file;
 	
 	/**
-	 * Création d'une nouvelle instance d'<i>AppSettings</i>.
+	 * CrÃ©ation d'une nouvelle instance d'<i>AppSettings</i>.
 	 * 
-	 * @param file Le fichier de paramètres.
+	 * @param file Le fichier de paramÃ¨tres.
 	 */
 	
 	public AppSettings(final File file) {
@@ -44,9 +44,9 @@ public class AppSettings {
 	}
 	
 	/**
-	 * Retourne le fichier utilisé pour enregistrer les paramètres.
+	 * Retourne le fichier utilisÃ© pour enregistrer les paramÃ¨tres.
 	 * 
-	 * @return Le fichier utilisé pour enregistrer les paramètres.
+	 * @return Le fichier utilisÃ© pour enregistrer les paramÃ¨tres.
 	 */
 	
 	public final File getFile() {
@@ -54,9 +54,9 @@ public class AppSettings {
 	}
 	
 	/**
-	 * Place le fichier qui sera utilisé pour enregistrer les paramètres.
+	 * Place le fichier qui sera utilisÃ© pour enregistrer les paramÃ¨tres.
 	 * 
-	 * @param file Le fichier qui sera utilisé pour enregistrer les paramètres.
+	 * @param file Le fichier qui sera utilisÃ© pour enregistrer les paramÃ¨tres.
 	 */
 	
 	public final void setFile(final File file) {
@@ -64,11 +64,11 @@ public class AppSettings {
 	}
 	
 	/**
-	 * Chargement des paramètres depuis le fichier.
-	 * <br>Si certains paramètres n'existent pas, ils seront enregistrés.
+	 * Chargement des paramÃ¨tres depuis le fichier.
+	 * <br>Si certains paramÃ¨tres n'existent pas, ils seront enregistrï¿½s.
 	 * 
-	 * @throws IOException Si une erreur intervient pendant l'accès au fichier.
-	 * @throws IllegalAccessException Si une erreur intervient pendant l'accès aux champs.
+	 * @throws IOException Si une erreur intervient pendant l'accÃ¨s au fichier.
+	 * @throws IllegalAccessException Si une erreur intervient pendant l'accÃ¨s aux champs.
 	 */
 	
 	public final void load() throws IOException, IllegalAccessException {
@@ -103,10 +103,10 @@ public class AppSettings {
 	}
 	
 	/**
-	 * Enregistrement des paramètres dans le fichier.
+	 * Enregistrement des paramÃ¨tres dans le fichier.
 	 * 
-	 * @throws IOException Si une erreur intervient pendant l'accès au fichier.
-	 * @throws IllegalAccessException Si une erreur intervient pendant l'accès aux champs.
+	 * @throws IOException Si une erreur intervient pendant l'accÃ¨s au fichier.
+	 * @throws IllegalAccessException Si une erreur intervient pendant l'accÃ¨s aux champs.
 	 */
 	
 	public final void save() throws IOException, IllegalAccessException {
@@ -148,7 +148,7 @@ public class AppSettings {
 	}
 	
 	/**
-	 * Utilisé pour donner des paramètres personnalisés aux champs lors de la sérialisation.
+	 * UtilisÃ© pour donner des paramÃ¨tres personnalisÃ©s aux champs lors de la sÃ©rialisation.
 	 */
 	
 	@Retention(RetentionPolicy.RUNTIME)

@@ -1,7 +1,7 @@
 package fr.hdelaunay.image.matrix;
 
 /**
- * Une matrice prédéfinie.
+ * Une matrice prÃ©dÃ©finie.
  * 
  * @author Hugo Delaunay.
  */
@@ -9,7 +9,7 @@ package fr.hdelaunay.image.matrix;
 public abstract class PredefinedMatrix {
 	
 	/**
-	 * Les matrices prédéfinies disponibles.
+	 * Les matrices prÃ©dÃ©finies disponibles.
 	 */
 	
 	private static final PredefinedMatrix[] PREDEFINED_MATRIX = new PredefinedMatrix[]{new Blurred(), new Borders(), new Contrast(), new Embossed()};
@@ -33,17 +33,17 @@ public abstract class PredefinedMatrix {
 	}
 	
 	/**
-	 * Retourne la matrice sous forme de tableau à une entrée.
+	 * Retourne la matrice sous forme de tableau Ã  une entrÃ©e.
 	 * 
-	 * @return La matrice sous forme de tableau à une entrée.
+	 * @return La matrice sous forme de tableau Ã  une entrÃ©e.
 	 */
 	
 	public abstract float[] getMatrix();
 	
 	/**
-	 * Retourne les matrices prédéfinies disponibles.
+	 * Retourne les matrices prÃ©dÃ©finies disponibles.
 	 * 
-	 * @return Les matrices prédéfinies disponibles.
+	 * @return Les matrices prÃ©dÃ©finies disponibles.
 	 */
 	
 	public static final PredefinedMatrix[] getPredefinedMatrix() {
