@@ -3,18 +3,23 @@ Traitement d'Image
 
 Traitement d'image en Java.
 
-## FonctionnalitÈs
-* Enregistrement et chargement de matrices de convolution (*.mtx).
-* Matrices prÈdÈfinnies.
-* Zoom avec filtre d'antialiasing.
-* Enregistrement des prÈvisualisations.
+[![Build Status](https://drone.io/github.com/Skyost/TraitementImage/status.png)](https://drone.io/github.com/Skyost/TraitementImage/latest)
 
-## ¿ Venir
+## Fonctionnalit√©s
+* Enregistrement et chargement de matrices de convolution (*.mtx).
+* Matrices pr√©d√©finnies.
+* Zoom avec filtre d'antialiasing.
+* Enregistrement des pr√©visualisations.
+
+## √Ä Venir
 * Reconnaissance faciale (avec [faint](http://faint.sourceforge.net/), [OpenCV](https://github.com/bytedeco/javacv/blob/master/samples/OpenCVFaceRecognizer.java) ou autre) ?
 
-## Captures d'Ècran
+## Captures d'√©cran
 ![Capture 1](https://github.com/Skyost/TraitementImage/blob/master/screenshots/screen-0.png)
 ![Capture 2](https://github.com/Skyost/TraitementImage/blob/master/screenshots/screen-1.png)
 
-## DÈpendances
+## T√©l√©chargements
+JAR disponible [ici](https://drone.io/github.com/Skyost/TraitementImage/files).
+
+## D√©pendances
 * [minimal-json v0.9.4](https://github.com/ralfstx/minimal-json).
