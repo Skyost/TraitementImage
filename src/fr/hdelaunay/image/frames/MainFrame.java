@@ -78,6 +78,7 @@ public class MainFrame extends JFrame {
 	private final JMenu fichiersRecents = new JMenu("Fichiers récents");
 	private final JLabel lblPreview = new JLabel();
 	private final JButton btnMatrice = new JButton("Appliquer matrice...");
+	private final JButton btnReconnaissanceFaciale = new JButton("Reconnaissance faciale...");
 	private final JLabel lblZoom = new JLabel("Zoom (" + zoom + "%) :");
 	private final JButton btnPlus = new JButton("Plus");
 	private final JButton btnMoins = new JButton("Moins");
@@ -154,6 +155,15 @@ public class MainFrame extends JFrame {
 		});
 		btnMatrice.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_matrix.png")));
 		btnMatrice.setEnabled(false);
+		btnReconnaissanceFaciale.addActionListener(new ActionListener() {
+
+			@Override
+			public final void actionPerformed(final ActionEvent event) {
+				// TODO: http://www.roboteek.fr/2014/03/19/detection-de-visages-en-java/
+			}
+			
+		});
+		btnReconnaissanceFaciale.setEnabled(false);
 		btnPlus.addActionListener(new ActionListener() {
 
 			@Override
@@ -190,16 +200,18 @@ public class MainFrame extends JFrame {
 			groupLayout.createParallelGroup(Alignment.TRAILING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+					.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-							.addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 							.addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
 							.addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-							.addComponent(btnPlus, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-							.addComponent(lblZoom, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE))
-						.addComponent(chckbxAntialiasing))
+							.addComponent(btnReconnaissanceFaciale, Alignment.LEADING))
+						.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+							.addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(btnPlus, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE))
+						.addComponent(chckbxAntialiasing)
+						.addComponent(lblZoom, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE))
 					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
@@ -210,6 +222,8 @@ public class MainFrame extends JFrame {
 						.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addComponent(btnMatrice)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnReconnaissanceFaciale)
 							.addGap(18)
 							.addComponent(lblZoom)
 							.addPreferredGap(ComponentPlacement.RELATED)
@@ -218,7 +232,7 @@ public class MainFrame extends JFrame {
 							.addComponent(btnMoins)
 							.addGap(18)
 							.addComponent(chckbxAntialiasing)
-							.addPreferredGap(ComponentPlacement.RELATED, 338, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.RELATED, 309, Short.MAX_VALUE)
 							.addComponent(btnAnnuler)))
 					.addContainerGap())
 		);
@@ -543,6 +557,7 @@ public class MainFrame extends JFrame {
 			btnMoins.setEnabled(false);
 		}
 		else if(zoom == 0) {
+			btnReconnaissanceFaciale.setEnabled(true);
 			btnPlus.setEnabled(true);
 			btnMoins.setEnabled(false);
 			if(antialiasing != null) {
@@ -556,6 +571,7 @@ public class MainFrame extends JFrame {
 		if(zoom > 0) {
 			btnMoins.setEnabled(true);
 			chckbxAntialiasing.setEnabled(true);
+			btnReconnaissanceFaciale.setEnabled(false);
 		}
 		if(zoom < 100) {
 			btnPlus.setEnabled(true);
@@ -567,5 +583,4 @@ public class MainFrame extends JFrame {
 			applyAntialiasing(true);
 		}
 	}
-	
 }
