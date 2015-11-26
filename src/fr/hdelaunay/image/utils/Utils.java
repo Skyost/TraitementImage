@@ -1,9 +1,8 @@
 package fr.hdelaunay.image.utils;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.net.URISyntaxException;
+import fr.hdelaunay.image.Main;
 
 public class Utils {
 	
@@ -62,11 +61,11 @@ public class Utils {
 	 * 
 	 * @return Le répertoire dans lequel le programme est éxecuté.
 	 * 
-	 * @throws UnsupportedEncodingException Si l'encodage n'est pas supporté.
+	 * @throws URISyntaxException Si la destination est invalide.
 	 */
 	
-	public static final File getParentFolder() throws UnsupportedEncodingException {
-		return new File(URLDecoder.decode(ClassLoader.getSystemClassLoader().getResource(".").getPath(), StandardCharsets.UTF_8.toString()));
+	public static final File getParentFolder() throws URISyntaxException {
+		return new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
 	}
 
 }

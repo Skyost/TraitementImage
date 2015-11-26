@@ -14,7 +14,7 @@ public class Main {
 	public static AppSettings settings;
 
 	/**
-	 * Premièe méthode éxecutée par le programme.
+	 * Première méthode éxecutée par le programme.
 	 * 
 	 * @param args Liste des arguments possibles :
 	 * <br><table><tr><td><b>Index</b></td><td><b>Explications</b></td></tr>
