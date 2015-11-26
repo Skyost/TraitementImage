@@ -159,7 +159,7 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				// TODO: http://www.roboteek.fr/2014/03/19/detection-de-visages-en-java/
+				// TODO: Reconnaissance faciale http://www.roboteek.fr/2014/03/19/detection-de-visages-en-java/.
 			}
 			
 		});
