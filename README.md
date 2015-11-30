@@ -12,7 +12,7 @@ Traitement d'image en Java.
 * Enregistrement des prévisualisations.
 
 ## À Venir
-* Reconnaissance faciale (avec [faint](http://faint.sourceforge.net/), [OpenCV](https://github.com/bytedeco/javacv/blob/master/samples/OpenCVFaceRecognizer.java) ou autre) ?
+* Reconnaissance faciale ([OpenCV](http://docs.opencv.org/3.0-beta/doc/tutorials/introduction/desktop_java/java_dev_intro.html)) ?
 
 ## Captures d'écran
 ![Capture 1](https://github.com/Skyost/TraitementImage/blob/master/screenshots/screen-0.png)

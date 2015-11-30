@@ -43,10 +43,5 @@
 			<artifactId>minimal-json</artifactId>
 			<version>0.9.4</version>
 		</dependency>
-		<dependency>
-			<groupId>org.openimaj</groupId>
-			<artifactId>faces</artifactId>
-			<version>1.2.1</version>
-		</dependency>
 	</dependencies>
 </project>

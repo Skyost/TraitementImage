@@ -36,8 +36,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.opencv.core.Rect;
+
 import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.dialogs.MatrixDialog;
+import fr.hdelaunay.image.dialogs.WaitingDialog;
+import fr.hdelaunay.image.utils.OpenCVUtils;
 import fr.hdelaunay.image.utils.Utils;
 
 import javax.swing.JCheckBox;
@@ -159,7 +163,23 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				// TODO: Reconnaissance faciale http://www.roboteek.fr/2014/03/19/detection-de-visages-en-java/.
+				final WaitingDialog dialog = new WaitingDialog(MainFrame.this);
+				dialog.setVisible(true);
+				new Thread() {
+					
+					@Override
+					public final void run() {
+						final Rect[] rect = OpenCVUtils.getFaces(images.peek());
+						if(rect.length == 0) {
+							JOptionPane.showMessageDialog(MainFrame.this, "Pas de visage sur cette image !");
+						}
+						else {
+							// TODO Dialogue avec ouverture d'une autre image et comparaison (+ annotations).
+						}
+						dialog.close();
+					}
+					
+				}.start();
 			}
 			
 		});
