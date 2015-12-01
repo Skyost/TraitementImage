@@ -3,8 +3,6 @@ Traitement d'Image
 
 Traitement d'image en Java.
 
-[![Build Status](https://drone.io/github.com/Skyost/TraitementImage/status.png)](https://drone.io/github.com/Skyost/TraitementImage/latest)
-
 ## Fonctionnalités
 * Enregistrement et chargement de matrices de convolution (*.mtx).
 * Matrices prédéfinnies.

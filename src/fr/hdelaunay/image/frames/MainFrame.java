@@ -2,10 +2,14 @@ package fr.hdelaunay.image.frames;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Graphics2D;
+import java.awt.Cursor;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -14,8 +18,6 @@ import java.awt.image.Kernel;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Stack;
-
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -41,6 +43,7 @@ import org.opencv.core.Rect;
 import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.dialogs.MatrixDialog;
 import fr.hdelaunay.image.dialogs.WaitingDialog;
+import fr.hdelaunay.image.utils.JLabelPreview;
 import fr.hdelaunay.image.utils.OpenCVUtils;
 import fr.hdelaunay.image.utils.Utils;
 
@@ -64,12 +67,6 @@ public class MainFrame extends JFrame {
 	private BufferedImage antialiasing;
 	
 	/**
-	 * L'historique des images (incrémenté à chaque fois qu'un filtre est appliqué.
-	 */
-	
-	private final Stack<BufferedImage> images = new Stack<BufferedImage>();
-	
-	/**
 	 * Le zoom actuel (0 <= zoom <= 100).
 	 */
 	
@@ -80,7 +77,7 @@ public class MainFrame extends JFrame {
 	 */
 	
 	private final JMenu fichiersRecents = new JMenu("Fichiers récents");
-	private final JLabel lblPreview = new JLabel();
+	private final JLabelPreview lblPreview = new JLabelPreview();
 	private final JButton btnMatrice = new JButton("Appliquer matrice...");
 	private final JButton btnReconnaissanceFaciale = new JButton("Reconnaissance faciale...");
 	private final JLabel lblZoom = new JLabel("Zoom (" + zoom + "%) :");
@@ -97,13 +94,13 @@ public class MainFrame extends JFrame {
 
 		@Override
 		public final void actionPerformed(final ActionEvent event) {
-			if(images.size() <= 1) {
+			if(lblPreview.stackSize() <= 1) {
 				return;
 			}
 			zoom(0);
-			images.pop();
-			lblPreview.setIcon(new ImageIcon(images.peek()));
-			if(images.size() == 1) {
+			lblPreview.popFromStack();
+			lblPreview.setIcon(lblPreview.peekFromStack(), false);
+			if(lblPreview.stackSize() == 1) {
 				btnAnnuler.setEnabled(false);
 			}
 		}
@@ -122,6 +119,82 @@ public class MainFrame extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setJMenuBar(this.createMenu());
 		final JScrollPane scrollBar = new JScrollPane(lblPreview);
+		lblPreview.addMouseListener(new MouseListener() {
+
+			@Override
+			public final void mouseClicked(final MouseEvent event) {
+				if(event.isPopupTrigger()) {
+					return;
+				}
+				if(event.getButton() != MouseEvent.BUTTON1) {
+					return;
+				}
+				final Rectangle[] rectangles = lblPreview.getRectanglesAt(event.getPoint());
+				if(rectangles.length == 0) {
+					return;
+				}
+				if(rectangles.length > 1) {
+					JOptionPane.showMessageDialog(MainFrame.this, "Ne pas cliquer sur deux visages en même temps !", "Erreur !", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				final JFileChooser chooser = new JFileChooser();
+				chooser.setFileFilter(new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
+				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
+				chooser.setMultiSelectionEnabled(false);
+				if(chooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION) {
+					try {
+						File file = chooser.getSelectedFile();
+						String path = file.getPath();
+						if(!path.endsWith(".png")) {
+							path += ".png";
+						}
+						file = new File(path);
+						if(file.exists()) {
+							file.delete();
+						}
+						ImageIO.write(lblPreview.getAsBufferedImage(rectangles[0]), "PNG", file);
+					}
+					catch(final Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			}
+
+			@Override
+			public final void mouseEntered(final MouseEvent event) {}
+
+			@Override
+			public final void mouseExited(final MouseEvent event) {}
+
+			@Override
+			public final void mousePressed(final MouseEvent event) {}
+
+			@Override
+			public final void mouseReleased(final MouseEvent event) {}
+			
+		});
+		lblPreview.addMouseMotionListener(new MouseMotionListener() {
+			
+			private int current = lblPreview.getCursor().getType();
+			
+			@Override
+		    public final void mouseMoved(final MouseEvent event) {
+				if(lblPreview.getRectanglesAt(event.getPoint()).length > 0) {
+					if(current != Cursor.HAND_CURSOR) {
+						lblPreview.setCursor(Cursor.getPredefinedCursor(current = Cursor.HAND_CURSOR));
+					}
+				}
+				else {
+					if(current != Cursor.DEFAULT_CURSOR) {
+						lblPreview.setCursor(Cursor.getPredefinedCursor(current = Cursor.DEFAULT_CURSOR));
+					}
+				}
+			}
+
+			@Override
+			public final void mouseDragged(final MouseEvent event) {}
+			
+		});
 		lblPreview.setVerticalAlignment(JLabel.TOP);
 		btnMatrice.addActionListener(new ActionListener() {
 
@@ -169,11 +242,16 @@ public class MainFrame extends JFrame {
 					
 					@Override
 					public final void run() {
-						final Rect[] rect = OpenCVUtils.getFaces(images.peek());
-						if(rect.length == 0) {
+						final Rect[] faces = OpenCVUtils.getFaces(lblPreview.peekFromStack());
+						if(faces.length == 0) {
 							JOptionPane.showMessageDialog(MainFrame.this, "Pas de visage sur cette image !");
 						}
 						else {
+							lblPreview.clearRectangles();
+							for(final Rect face : faces) {
+								lblPreview.addRectangle(new Rectangle(face.x, face.y, face.width, face.height));
+							}
+							lblPreview.paintComponent(lblPreview.getGraphics());
 							// TODO Dialogue avec ouverture d'une autre image et comparaison (+ annotations).
 						}
 						dialog.close();
@@ -205,7 +283,7 @@ public class MainFrame extends JFrame {
 		chckbxAntialiasing.addActionListener(new ActionListener() {
 
 			@Override
-			public void actionPerformed(final ActionEvent event) {
+			public final void actionPerformed(final ActionEvent event) {
 				applyAntialiasing(chckbxAntialiasing.isSelected());
 			}
 			
@@ -290,7 +368,7 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				if(images.size() == 0) {
+				if(lblPreview.stackSize() == 0) {
 					return;
 				}
 				final JFileChooser chooser = new JFileChooser();
@@ -347,7 +425,7 @@ public class MainFrame extends JFrame {
 						if(file.exists()) {
 							file.delete();
 						}
-						ImageIO.write(previewAsBufferedImage(), "PNG", file);
+						ImageIO.write(lblPreview.getAsBufferedImage(), "PNG", file);
 					}
 					catch(final Exception ex) {
 						JOptionPane.showMessageDialog(MainFrame.this, "<html>Impossible d'enregistrer la prévisualisation !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
@@ -378,8 +456,8 @@ public class MainFrame extends JFrame {
 			if(image == null) {
 				return;
 			}
-			images.clear();
-			lblPreview.setIcon(new ImageIcon(images.push(image)));
+			lblPreview.clearStack();
+			lblPreview.setIcon(image, true);
 			btnMatrice.setEnabled(true);
 			final String path = file.getPath();
 			MainFrame.this.setTitle("Traitement image - " + path);
@@ -409,7 +487,7 @@ public class MainFrame extends JFrame {
 			if(file.exists()) {
 				file.delete();
 			}
-			ImageIO.write(images.peek(), "BMP", file);
+			ImageIO.write(lblPreview.peekFromStack(), "BMP", file);
 			MainFrame.this.setTitle("Traitement image - " + path);
 			saveToHistory(path);
 		}
@@ -428,32 +506,18 @@ public class MainFrame extends JFrame {
 	
 	public final void applyAntialiasing(final boolean apply) {
 		if(apply) {
-			antialiasing = previewAsBufferedImage();
+			antialiasing = lblPreview.getAsBufferedImage();
 			/* https://code.google.com/p/raytraceplusplus/wiki/AntiAliasing */
-			lblPreview.setIcon(new ImageIcon(new ConvolveOp(new Kernel(3, 3, new float[]{
+			lblPreview.setIcon(new ConvolveOp(new Kernel(3, 3, new float[]{
 					0f, .2f, 0f,
 					.2f, .2f, .2f,
 					0f, .2f, 0f
-			})).filter(antialiasing, null)));
+			})).filter(antialiasing, null), false);
 		}
 		else {
-			lblPreview.setIcon(new ImageIcon(antialiasing));
+			lblPreview.setIcon(antialiasing, false);
 			antialiasing = null;
 		}
-	}
-	
-	/**
-	 * Retourne la prévisualisation (champ <i>lblPreview</i>) en <i>BufferedImage</i>.
-	 * 
-	 * @return La prévisualisation en <i>BufferedImage</i>.
-	 */
-	
-	public final BufferedImage previewAsBufferedImage() {
-		final BufferedImage image = new BufferedImage(lblPreview.getWidth(), lblPreview.getHeight(), BufferedImage.TYPE_INT_ARGB);
-		final Graphics2D graphics = image.createGraphics();
-		lblPreview.printAll(graphics);
-		graphics.dispose();
-		return image;
 	}
 	
 	/**
@@ -551,7 +615,7 @@ public class MainFrame extends JFrame {
 				return;
 			}
 			zoom(0);
-			lblPreview.setIcon(new ImageIcon(images.push(new ConvolveOp(new Kernel(size, size, matrix)).filter(images.peek(), null))));
+			lblPreview.setIcon(new ConvolveOp(new Kernel(size, size, matrix)).filter(lblPreview.peekFromStack(), null), true);
 			btnAnnuler.setEnabled(true);
 		}
 		catch(final Exception ex) {
@@ -585,7 +649,7 @@ public class MainFrame extends JFrame {
 			}
 			chckbxAntialiasing.setEnabled(false);
 			chckbxAntialiasing.setSelected(false);
-			lblPreview.setIcon(new ImageIcon(images.peek()));
+			lblPreview.setIcon(lblPreview.peekFromStack(), false);
 			return;
 		}
 		if(zoom > 0) {
@@ -598,7 +662,7 @@ public class MainFrame extends JFrame {
 		}
 		final AffineTransform transform = new AffineTransform();
 		transform.scale(zoom * .15f, zoom * .15f);
-		lblPreview.setIcon(new ImageIcon(new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(images.peek(), null)));
+		lblPreview.setIcon(new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(lblPreview.peekFromStack(), null), false);
 		if(antialiasing != null) {
 			applyAntialiasing(true);
 		}

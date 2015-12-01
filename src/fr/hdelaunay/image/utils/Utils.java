@@ -1,7 +1,10 @@
 package fr.hdelaunay.image.utils;
 
+import java.awt.Color;
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Random;
+
 import fr.hdelaunay.image.Main;
 
 public class Utils {
@@ -66,6 +69,11 @@ public class Utils {
 	
 	public static final File getParentFolder() throws URISyntaxException {
 		return new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
+	}
+	
+	public static final Color randomColor() {
+		final Random random = new Random();
+		return new Color(random.nextFloat(), random.nextFloat(), random.nextFloat());
 	}
 
 }
