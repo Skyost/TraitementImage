@@ -63,19 +63,19 @@ public class MainFrame extends JFrame {
 	 * Non nul si l'antialiasing est activé et que le zoom est supérieur à zéro.
 	 * <br>Si non nul, contient l'image sans filtre d'antialiasing.
 	 */
-	
+
 	private BufferedImage antialiasing;
-	
+
 	/**
 	 * Le zoom actuel (0 <= zoom <= 100).
 	 */
-	
+
 	private short zoom = 0;
-	
+
 	/*
 	 * Différents composants du GUI.
 	 */
-	
+
 	private final JMenu fichiersRecents = new JMenu("Fichiers récents");
 	private final JLabelPreview lblPreview = new JLabelPreview();
 	private final JButton btnMatrice = new JButton("Appliquer matrice...");
@@ -89,7 +89,7 @@ public class MainFrame extends JFrame {
 	/**
 	 * Le code éxecuté lorsque l'on cliqué sur le bouton Annuler ou sur le menu Édition → Annuler.
 	 */
-	
+
 	private final ActionListener undo = new ActionListener() {
 
 		@Override
@@ -106,7 +106,7 @@ public class MainFrame extends JFrame {
 		}
 
 	};
-	
+
 	/**
 	 * Création d'une nouvelle instance de <i>MainFrame</i> (la fenêtre principale).
 	 */
@@ -171,14 +171,14 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void mouseReleased(final MouseEvent event) {}
-			
+
 		});
 		lblPreview.addMouseMotionListener(new MouseMotionListener() {
-			
+
 			private int current = lblPreview.getCursor().getType();
-			
+
 			@Override
-		    public final void mouseMoved(final MouseEvent event) {
+			public final void mouseMoved(final MouseEvent event) {
 				if(lblPreview.getRectanglesAt(event.getPoint()).length > 0) {
 					if(current != Cursor.HAND_CURSOR) {
 						lblPreview.setCursor(Cursor.getPredefinedCursor(current = Cursor.HAND_CURSOR));
@@ -193,7 +193,7 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void mouseDragged(final MouseEvent event) {}
-			
+
 		});
 		lblPreview.setVerticalAlignment(JLabel.TOP);
 		btnMatrice.addActionListener(new ActionListener() {
@@ -239,7 +239,7 @@ public class MainFrame extends JFrame {
 				final WaitingDialog dialog = new WaitingDialog(MainFrame.this);
 				dialog.setVisible(true);
 				new Thread() {
-					
+
 					@Override
 					public final void run() {
 						final Rect[] faces = OpenCVUtils.getFaces(lblPreview.peekFromStack());
@@ -252,15 +252,15 @@ public class MainFrame extends JFrame {
 								lblPreview.addRectangle(new Rectangle(face.x, face.y, face.width, face.height));
 							}
 							lblPreview.paintComponent(lblPreview.getGraphics());
-							// TODO Dialogue avec ouverture d'une autre image et comparaison (+ annotations).
 						}
 						dialog.close();
 					}
-					
+
 				}.start();
 			}
-			
+
 		});
+		btnReconnaissanceFaciale.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_recognition.png")));
 		btnReconnaissanceFaciale.setEnabled(false);
 		btnPlus.addActionListener(new ActionListener() {
 
@@ -286,7 +286,7 @@ public class MainFrame extends JFrame {
 			public final void actionPerformed(final ActionEvent event) {
 				applyAntialiasing(chckbxAntialiasing.isSelected());
 			}
-			
+
 		});
 		chckbxAntialiasing.setEnabled(false);
 		btnAnnuler.addActionListener(undo);
@@ -294,49 +294,11 @@ public class MainFrame extends JFrame {
 		btnAnnuler.setEnabled(false);
 		final Container pane = this.getContentPane();
 		final GroupLayout groupLayout = new GroupLayout(pane);
-		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(Alignment.TRAILING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-							.addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-							.addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-							.addComponent(btnReconnaissanceFaciale, Alignment.LEADING))
-						.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-							.addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-							.addComponent(btnPlus, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE))
-						.addComponent(chckbxAntialiasing)
-						.addComponent(lblZoom, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap())
-		);
-		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(btnMatrice)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnReconnaissanceFaciale)
-							.addGap(18)
-							.addComponent(lblZoom)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnPlus)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnMoins)
-							.addGap(18)
-							.addComponent(chckbxAntialiasing)
-							.addPreferredGap(ComponentPlacement.RELATED, 309, Short.MAX_VALUE)
-							.addComponent(btnAnnuler)))
-					.addContainerGap())
-		);
+		groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.TRAILING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(groupLayout.createParallelGroup(Alignment.LEADING).addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false).addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(btnReconnaissanceFaciale, Alignment.LEADING)).addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false).addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(btnPlus, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)).addComponent(chckbxAntialiasing).addComponent(lblZoom, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)).addContainerGap()));
+		groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.LEADING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addGroup(groupLayout.createParallelGroup(Alignment.LEADING).addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE).addGroup(groupLayout.createSequentialGroup().addComponent(btnMatrice).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnReconnaissanceFaciale).addGap(18).addComponent(lblZoom).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnPlus).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnMoins).addGap(18).addComponent(chckbxAntialiasing).addPreferredGap(ComponentPlacement.RELATED, 309, Short.MAX_VALUE).addComponent(btnAnnuler))).addContainerGap()));
 		pane.setLayout(groupLayout);
 	}
-	
+
 	/**
 	 * Création du menu pour le GUI.
 	 * 
@@ -396,13 +358,13 @@ public class MainFrame extends JFrame {
 		menu.add(edition);
 		return menu;
 	}
-	
+
 	/**
 	 * Création du menu pour le label de prévisualisation.
 	 * 
 	 * @return Le menu.
 	 */
-	
+
 	public final JPopupMenu createLabelMenu() {
 		final JPopupMenu menu = new JPopupMenu();
 		final JMenuItem enregistrerPrevisualisation = new JMenuItem("Enregistrer la prévisualisation...");
@@ -433,19 +395,19 @@ public class MainFrame extends JFrame {
 					}
 				}
 			}
-			
+
 		});
 		enregistrerPrevisualisation.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_open.png")));
 		menu.add(enregistrerPrevisualisation);
 		return menu;
 	}
-	
+
 	/**
 	 * Ouvre un fichier (doit être une image BMP).
 	 * 
 	 * @param file Le fichier.
 	 */
-	
+
 	public final void open(final File file) {
 		try {
 			if(!file.exists()) {
@@ -470,13 +432,13 @@ public class MainFrame extends JFrame {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Enregistrement de l'élément qui se situe au dessus de la pile (champ <i>images</i>) dans un fichier.
 	 * 
 	 * @param file Le fichier.
 	 */
-	
+
 	public final void save(File file) {
 		try {
 			String path = file.getPath();
@@ -496,36 +458,32 @@ public class MainFrame extends JFrame {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Application ou non d'un filtre d'antialisating.
 	 * 
 	 * @param apply </i>true</i> Application du filtre.
 	 * <br><i>false</i> Enlèvement de l'antialiasing.
 	 */
-	
+
 	public final void applyAntialiasing(final boolean apply) {
 		if(apply) {
 			antialiasing = lblPreview.getAsBufferedImage();
 			/* https://code.google.com/p/raytraceplusplus/wiki/AntiAliasing */
-			lblPreview.setIcon(new ConvolveOp(new Kernel(3, 3, new float[]{
-					0f, .2f, 0f,
-					.2f, .2f, .2f,
-					0f, .2f, 0f
-			})).filter(antialiasing, null), false);
+			lblPreview.setIcon(new ConvolveOp(new Kernel(3, 3, new float[]{0f, .2f, 0f, .2f, .2f, .2f, 0f, .2f, 0f})).filter(antialiasing, null), false);
 		}
 		else {
 			lblPreview.setIcon(antialiasing, false);
 			antialiasing = null;
 		}
 	}
-	
+
 	/**
 	 * Enregistre le chemin dans l'historique.
 	 * 
 	 * @param path Le chemin.
 	 */
-	
+
 	private final void saveToHistory(final String path) {
 		boolean needSoSave = false;
 		if(Main.settings.lastFiles.contains(path)) {
@@ -546,11 +504,11 @@ public class MainFrame extends JFrame {
 		}
 		refreshPaths();
 	}
-	
+
 	/**
 	 * Rafraichissement des chemins (et donc du menu).
 	 */
-	
+
 	private final void refreshPaths() {
 		boolean needToSave = false;
 		fichiersRecents.removeAll();
@@ -568,7 +526,7 @@ public class MainFrame extends JFrame {
 				public final void actionPerformed(final ActionEvent event) {
 					open(file);
 				}
-					
+
 			});
 			fichiersRecents.add(lastFileItem);
 		}
@@ -584,7 +542,7 @@ public class MainFrame extends JFrame {
 			fichiersRecents.addSeparator();
 			final JMenuItem vider = new JMenuItem("Vider la liste");
 			vider.addActionListener(new ActionListener() {
-				
+
 				@Override
 				public final void actionPerformed(final ActionEvent event) {
 					try {
@@ -596,19 +554,19 @@ public class MainFrame extends JFrame {
 						ex.printStackTrace();
 					}
 				}
-				
+
 			});
 			fichiersRecents.add(vider);
 		}
 	}
-	
+
 	/**
 	 * Application d'une matrice.
 	 * 
 	 * @param matrix La matrice.
 	 * @param size La taille de cette matrice (on assume que cette taille est la même pour la hauteur comme pour la largeur).
 	 */
-	
+
 	public final void applyMatrix(final float[] matrix, final int size) {
 		try {
 			if(size != 3 && size != 5) {
@@ -623,7 +581,7 @@ public class MainFrame extends JFrame {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Zoom sur la prévisualisation et application de l'antialiasing en conséquence (si sélectionné).
 	 * 
@@ -667,4 +625,5 @@ public class MainFrame extends JFrame {
 			applyAntialiasing(true);
 		}
 	}
+	
 }
