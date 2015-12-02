@@ -19,3 +19,4 @@ Traitement d'image en Java.
 
 ## Dépendances
 * [minimal-json v0.9.4](https://github.com/ralfstx/minimal-json).
+* [OpenCV](http://opencv.org)
