@@ -3,7 +3,6 @@ package fr.hdelaunay.image.frames;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +17,8 @@ import java.awt.image.Kernel;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Set;
+
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -38,13 +39,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.opencv.core.Rect;
-
 import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.dialogs.MatrixDialog;
 import fr.hdelaunay.image.dialogs.WaitingDialog;
 import fr.hdelaunay.image.utils.JLabelPreview;
 import fr.hdelaunay.image.utils.OpenCVUtils;
+import fr.hdelaunay.image.utils.OpenCVUtils.Face;
 import fr.hdelaunay.image.utils.Utils;
 
 import javax.swing.JCheckBox;
@@ -129,11 +129,11 @@ public class MainFrame extends JFrame {
 				if(event.getButton() != MouseEvent.BUTTON1) {
 					return;
 				}
-				final Rectangle[] rectangles = lblPreview.getRectanglesAt(event.getPoint());
-				if(rectangles.length == 0) {
+				final Set<Face> rectangles = lblPreview.getFacesAt(event.getPoint());
+				if(rectangles.size() == 0) {
 					return;
 				}
-				if(rectangles.length > 1) {
+				if(rectangles.size() > 1) {
 					JOptionPane.showMessageDialog(MainFrame.this, "Ne pas cliquer sur deux visages en même temps !", "Erreur !", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
@@ -152,7 +152,7 @@ public class MainFrame extends JFrame {
 						if(file.exists()) {
 							file.delete();
 						}
-						ImageIO.write(lblPreview.getAsBufferedImage(rectangles[0]), "PNG", file);
+						ImageIO.write(lblPreview.getAsBufferedImage(false, rectangles.iterator().next().getBounds()), "PNG", file);
 					}
 					catch(final Exception ex) {
 						ex.printStackTrace();
@@ -179,15 +179,13 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void mouseMoved(final MouseEvent event) {
-				if(lblPreview.getRectanglesAt(event.getPoint()).length > 0) {
+				if(lblPreview.getFacesAt(event.getPoint()).size() > 0) {
 					if(current != Cursor.HAND_CURSOR) {
 						lblPreview.setCursor(Cursor.getPredefinedCursor(current = Cursor.HAND_CURSOR));
 					}
 				}
-				else {
-					if(current != Cursor.DEFAULT_CURSOR) {
-						lblPreview.setCursor(Cursor.getPredefinedCursor(current = Cursor.DEFAULT_CURSOR));
-					}
+				else if(current != Cursor.DEFAULT_CURSOR) {
+					lblPreview.setCursor(Cursor.getPredefinedCursor(current = Cursor.DEFAULT_CURSOR));
 				}
 			}
 
@@ -242,15 +240,13 @@ public class MainFrame extends JFrame {
 
 					@Override
 					public final void run() {
-						final Rect[] faces = OpenCVUtils.getFaces(lblPreview.peekFromStack());
+						final Face[] faces = OpenCVUtils.getFaces(lblPreview.peekFromStack());
 						if(faces.length == 0) {
 							JOptionPane.showMessageDialog(MainFrame.this, "Pas de visage sur cette image !");
 						}
 						else {
-							lblPreview.clearRectangles();
-							for(final Rect face : faces) {
-								lblPreview.addRectangle(new Rectangle(face.x, face.y, face.width, face.height));
-							}
+							lblPreview.clearFaces();
+							lblPreview.addFaces(faces);
 							lblPreview.paintComponent(lblPreview.getGraphics());
 						}
 						dialog.close();
@@ -294,8 +290,44 @@ public class MainFrame extends JFrame {
 		btnAnnuler.setEnabled(false);
 		final Container pane = this.getContentPane();
 		final GroupLayout groupLayout = new GroupLayout(pane);
-		groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.TRAILING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(groupLayout.createParallelGroup(Alignment.LEADING).addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false).addComponent(btnMatrice, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(btnAnnuler, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE).addComponent(btnReconnaissanceFaciale, Alignment.LEADING)).addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false).addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(btnPlus, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)).addComponent(chckbxAntialiasing).addComponent(lblZoom, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)).addContainerGap()));
-		groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.LEADING).addGroup(groupLayout.createSequentialGroup().addContainerGap().addGroup(groupLayout.createParallelGroup(Alignment.LEADING).addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE).addGroup(groupLayout.createSequentialGroup().addComponent(btnMatrice).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnReconnaissanceFaciale).addGap(18).addComponent(lblZoom).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnPlus).addPreferredGap(ComponentPlacement.RELATED).addComponent(btnMoins).addGap(18).addComponent(chckbxAntialiasing).addPreferredGap(ComponentPlacement.RELATED, 309, Short.MAX_VALUE).addComponent(btnAnnuler))).addContainerGap()));
+		groupLayout.setHorizontalGroup(
+			groupLayout.createParallelGroup(Alignment.TRAILING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(btnMatrice, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+						.addComponent(btnAnnuler, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+						.addComponent(btnReconnaissanceFaciale, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(lblZoom, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(btnPlus, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(chckbxAntialiasing, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+					.addContainerGap())
+		);
+		groupLayout.setVerticalGroup(
+			groupLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+						.addComponent(scrollBar, GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(btnMatrice)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnReconnaissanceFaciale)
+							.addGap(18)
+							.addComponent(lblZoom)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnPlus)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnMoins)
+							.addGap(18)
+							.addComponent(chckbxAntialiasing)
+							.addPreferredGap(ComponentPlacement.RELATED, 306, Short.MAX_VALUE)
+							.addComponent(btnAnnuler)))
+					.addContainerGap())
+		);
 		pane.setLayout(groupLayout);
 	}
 
@@ -387,7 +419,7 @@ public class MainFrame extends JFrame {
 						if(file.exists()) {
 							file.delete();
 						}
-						ImageIO.write(lblPreview.getAsBufferedImage(), "PNG", file);
+						ImageIO.write(lblPreview.getAsBufferedImage(true), "PNG", file);
 					}
 					catch(final Exception ex) {
 						JOptionPane.showMessageDialog(MainFrame.this, "<html>Impossible d'enregistrer la prévisualisation !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
@@ -468,7 +500,7 @@ public class MainFrame extends JFrame {
 
 	public final void applyAntialiasing(final boolean apply) {
 		if(apply) {
-			antialiasing = lblPreview.getAsBufferedImage();
+			antialiasing = lblPreview.getAsBufferedImage(false);
 			/* https://code.google.com/p/raytraceplusplus/wiki/AntiAliasing */
 			lblPreview.setIcon(new ConvolveOp(new Kernel(3, 3, new float[]{0f, .2f, 0f, .2f, .2f, .2f, 0f, .2f, 0f})).filter(antialiasing, null), false);
 		}
@@ -593,6 +625,7 @@ public class MainFrame extends JFrame {
 			return;
 		}
 		this.zoom = (short)zoom;
+		lblPreview.clearFaces();
 		lblZoom.setText("Zoom (" + zoom + "%) :");
 		if(zoom == 100) {
 			btnPlus.setEnabled(false);
