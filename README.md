@@ -17,8 +17,5 @@ Traitement d'image en Java.
 ![Capture 2](https://github.com/Skyost/TraitementImage/blob/master/screenshots/screen-1.png)
 ![Capture 3](https://github.com/Skyost/TraitementImage/blob/master/screenshots/screen-2.png)
 
-## Téléchargements
-JAR disponible [ici](https://drone.io/github.com/Skyost/TraitementImage/files).
-
 ## Dépendances
 * [minimal-json v0.9.4](https://github.com/ralfstx/minimal-json).
