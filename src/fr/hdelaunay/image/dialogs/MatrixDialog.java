@@ -4,8 +4,8 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -25,7 +25,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -136,11 +135,8 @@ public class MatrixDialog extends JFrame {
 			
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				final JFileChooser chooser = new JFileChooser();
-				chooser.setFileFilter(new FileNameExtensionFilter("Fichier de matrice (*.mtx)", "mtx"));
-				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
-				chooser.setMultiSelectionEnabled(false);
-				if(chooser.showOpenDialog(MatrixDialog.this) == JFileChooser.APPROVE_OPTION) {
+				final JFileChooser chooser = Utils.showDialog(MatrixDialog.this, true, new FileNameExtensionFilter("Fichier de matrice (*.mtx)", "mtx"));
+				if(chooser != null) {
 					try {
 						final List<String> lines = Files.readAllLines(Paths.get(chooser.getSelectedFile().getPath()), StandardCharsets.UTF_8);
 						final int sqrt = (int)Math.sqrt(lines.size());
@@ -168,26 +164,9 @@ public class MatrixDialog extends JFrame {
 			
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				final JFileChooser chooser = new JFileChooser();
-				chooser.setFileFilter(new FileNameExtensionFilter("Fichier de matrice (*.mtx)", "mtx"));
-				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
-				chooser.setMultiSelectionEnabled(false);
-				if(chooser.showSaveDialog(MatrixDialog.this) == JFileChooser.APPROVE_OPTION) {
-					try {
-						String path = chooser.getSelectedFile().getPath();
-						if(!path.endsWith(".mtx")) {
-							path += ".mtx";
-						}
-						final File file = new File(path);
-						if(file.exists()) {
-							file.delete();
-						}
-						Files.write(Paths.get(path), Utils.joinFloats(System.lineSeparator(), getMatrix()).getBytes(StandardCharsets.UTF_8));
-					}
-					catch(Exception ex) {
-						JOptionPane.showMessageDialog(MatrixDialog.this, "Impossible d'enregistrer ce fichier !", "Erreur !", JOptionPane.ERROR_MESSAGE);
-						ex.printStackTrace();
-					}
+				final JFileChooser chooser = Utils.showDialog(MatrixDialog.this, false, new FileNameExtensionFilter("Fichier de matrice (*.mtx)", "mtx"));
+				if(chooser != null) {
+					Utils.saveContent(MatrixDialog.this, chooser, Utils.joinFloats(System.lineSeparator(), getMatrix()));
 				}
 			}
 		

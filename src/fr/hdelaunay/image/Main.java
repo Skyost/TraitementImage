@@ -9,6 +9,9 @@ import fr.hdelaunay.image.utils.Utils;
 
 public class Main {
 	
+	public static final String APP_NAME = "Traitement d'images";
+	public static final String APP_VERSION = "0.1";
+	
 	public static final String RES_PACKAGE = "/fr/hdelaunay/image/res/";
 	
 	public static AppSettings settings;

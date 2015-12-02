@@ -15,13 +15,13 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.File;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -38,6 +38,11 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import fr.hdelaunay.image.Main;
 import fr.hdelaunay.image.dialogs.MatrixDialog;
@@ -48,6 +53,7 @@ import fr.hdelaunay.image.utils.OpenCVUtils.Face;
 import fr.hdelaunay.image.utils.Utils;
 
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 
 /**
  * La fenêtre principale.
@@ -80,6 +86,7 @@ public class MainFrame extends JFrame {
 	private final JLabelPreview lblPreview = new JLabelPreview();
 	private final JButton btnMatrice = new JButton("Appliquer matrice...");
 	private final JButton btnReconnaissanceFaciale = new JButton("Reconnaissance faciale...");
+	private final JButton btnComparaisonVisages = new JButton("Comparaison de visages...");
 	private final JLabel lblZoom = new JLabel("Zoom (" + zoom + "%) :");
 	private final JButton btnPlus = new JButton("Plus");
 	private final JButton btnMoins = new JButton("Moins");
@@ -112,7 +119,7 @@ public class MainFrame extends JFrame {
 	 */
 
 	public MainFrame() {
-		this.setTitle("Traitement image");
+		this.setTitle(Main.APP_NAME + " v" + Main.APP_VERSION);
 		this.setIconImage(Toolkit.getDefaultToolkit().getImage(Main.class.getResource(Main.RES_PACKAGE + "icon_app.png")));
 		this.setSize(680, 600);
 		this.setLocationRelativeTo(null);
@@ -129,30 +136,23 @@ public class MainFrame extends JFrame {
 				if(event.getButton() != MouseEvent.BUTTON1) {
 					return;
 				}
-				final Set<Face> rectangles = lblPreview.getFacesAt(event.getPoint());
-				if(rectangles.size() == 0) {
+				final Set<Face> faces = lblPreview.getFacesAt(event.getPoint());
+				if(faces.size() == 0) {
 					return;
 				}
-				if(rectangles.size() > 1) {
+				if(faces.size() > 1) {
 					JOptionPane.showMessageDialog(MainFrame.this, "Ne pas cliquer sur deux visages en même temps !", "Erreur !", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				final JFileChooser chooser = new JFileChooser();
-				chooser.setFileFilter(new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
-				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
-				chooser.setMultiSelectionEnabled(false);
-				if(chooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION) {
+				final JFileChooser chooser = Utils.showDialog(MainFrame.this, false, new FileNameExtensionFilter("Fichier de visage (*.fac)", "fac"));
+				if(chooser != null) {
 					try {
-						File file = chooser.getSelectedFile();
-						String path = file.getPath();
-						if(!path.endsWith(".png")) {
-							path += ".png";
-						}
-						file = new File(path);
-						if(file.exists()) {
-							file.delete();
-						}
-						ImageIO.write(lblPreview.getAsBufferedImage(false, rectangles.iterator().next().getBounds()), "PNG", file);
+						final Face face = faces.iterator().next();
+						final Transformer transformer = TransformerFactory.newInstance().newTransformer();
+						transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+						final StringWriter writer = new StringWriter();
+						transformer.transform(new DOMSource(face.toXML(lblPreview.getAsBufferedImage(false, face.getBounds()))), new StreamResult(writer));
+						Utils.saveContent(MainFrame.this, chooser, writer.getBuffer().toString());
 					}
 					catch(final Exception ex) {
 						ex.printStackTrace();
@@ -258,6 +258,15 @@ public class MainFrame extends JFrame {
 		});
 		btnReconnaissanceFaciale.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_recognition.png")));
 		btnReconnaissanceFaciale.setEnabled(false);
+		btnComparaisonVisages.addActionListener(new ActionListener() {
+			
+			@Override
+			public final void actionPerformed(final ActionEvent event) {
+				new ComparaisonFrame(MainFrame.this).setVisible(true);
+			}
+			
+		});
+		btnComparaisonVisages.setIcon(new ImageIcon(Main.class.getResource(Main.RES_PACKAGE + "icon_comparaison.png")));
 		btnPlus.addActionListener(new ActionListener() {
 
 			@Override
@@ -300,6 +309,7 @@ public class MainFrame extends JFrame {
 						.addComponent(btnMatrice, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
 						.addComponent(btnAnnuler, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
 						.addComponent(btnReconnaissanceFaciale, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(btnComparaisonVisages, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(btnMoins, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(lblZoom, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(btnPlus, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -316,6 +326,8 @@ public class MainFrame extends JFrame {
 							.addComponent(btnMatrice)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(btnReconnaissanceFaciale)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnComparaisonVisages)
 							.addGap(18)
 							.addComponent(lblZoom)
 							.addPreferredGap(ComponentPlacement.RELATED)
@@ -345,11 +357,8 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				final JFileChooser chooser = new JFileChooser();
-				chooser.setFileFilter(new FileNameExtensionFilter("Fichier bitmap (*.bmp)", "bmp"));
-				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
-				chooser.setMultiSelectionEnabled(false);
-				if(chooser.showOpenDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION) {
+				final JFileChooser chooser = Utils.showDialog(MainFrame.this, true, new FileNameExtensionFilter("Fichier bitmap (*.bmp)", "bmp"), new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
+				if(chooser != null) {
 					open(chooser.getSelectedFile());
 				}
 			}
@@ -365,12 +374,9 @@ public class MainFrame extends JFrame {
 				if(lblPreview.stackSize() == 0) {
 					return;
 				}
-				final JFileChooser chooser = new JFileChooser();
-				chooser.setFileFilter(new FileNameExtensionFilter("Fichier bitmap (*.bmp)", "bmp"));
-				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
-				chooser.setMultiSelectionEnabled(false);
-				if(chooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION) {
-					save(chooser.getSelectedFile());
+				final JFileChooser chooser = Utils.showDialog(MainFrame.this, false, new FileNameExtensionFilter("Fichier bitmap (*.bmp)", "bmp"), new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
+				if(chooser != null) {
+					save(chooser);
 				}
 			}
 
@@ -404,27 +410,9 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				final JFileChooser chooser = new JFileChooser();
-				chooser.setFileFilter(new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
-				chooser.removeChoosableFileFilter(chooser.getAcceptAllFileFilter());
-				chooser.setMultiSelectionEnabled(false);
-				if(chooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION) {
-					try {
-						File file = chooser.getSelectedFile();
-						String path = file.getPath();
-						if(!path.endsWith(".png")) {
-							path += ".png";
-						}
-						file = new File(path);
-						if(file.exists()) {
-							file.delete();
-						}
-						ImageIO.write(lblPreview.getAsBufferedImage(true), "PNG", file);
-					}
-					catch(final Exception ex) {
-						JOptionPane.showMessageDialog(MainFrame.this, "<html>Impossible d'enregistrer la prévisualisation !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
-						ex.printStackTrace();
-					}
+				final JFileChooser chooser = Utils.showDialog(MainFrame.this, false, new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
+				if(chooser != null) {
+					Utils.saveContent(MainFrame.this, chooser, lblPreview.getAsBufferedImage(true));
 				}
 			}
 
@@ -454,7 +442,7 @@ public class MainFrame extends JFrame {
 			lblPreview.setIcon(image, true);
 			btnMatrice.setEnabled(true);
 			final String path = file.getPath();
-			MainFrame.this.setTitle("Traitement image - " + path);
+			this.setTitle(Main.APP_NAME + " v" + Main.APP_VERSION + " - " + path);
 			saveToHistory(path);
 			zoom(0);
 			lblPreview.setComponentPopupMenu(this.createLabelMenu());
@@ -468,26 +456,15 @@ public class MainFrame extends JFrame {
 	/**
 	 * Enregistrement de l'élément qui se situe au dessus de la pile (champ <i>images</i>) dans un fichier.
 	 * 
-	 * @param file Le fichier.
+	 * @param chooser Le sélécteur utilisé.
 	 */
 
-	public final void save(File file) {
-		try {
-			String path = file.getPath();
-			if(!path.endsWith(".bmp")) {
-				path += ".bmp";
-			}
-			file = new File(path);
-			if(file.exists()) {
-				file.delete();
-			}
-			ImageIO.write(lblPreview.peekFromStack(), "BMP", file);
-			MainFrame.this.setTitle("Traitement image - " + path);
+	public final void save(final JFileChooser chooser) {
+		final File file = Utils.saveContent(this, chooser, lblPreview.peekFromStack());
+		if(file != null) {
+			final String path = file.getPath();
+			this.setTitle(Main.APP_NAME + " v" + Main.APP_VERSION + " - " + path);
 			saveToHistory(path);
-		}
-		catch(final Exception ex) {
-			JOptionPane.showMessageDialog(MainFrame.this, "<html>Impossible d'enregistrer ce fichier !<br>" + ex.getClass().getName() + "</html>", "Erreur !", JOptionPane.ERROR_MESSAGE);
-			ex.printStackTrace();
 		}
 	}
 
@@ -605,6 +582,7 @@ public class MainFrame extends JFrame {
 				return;
 			}
 			zoom(0);
+			lblPreview.clearFaces();
 			lblPreview.setIcon(new ConvolveOp(new Kernel(size, size, matrix)).filter(lblPreview.peekFromStack(), null), true);
 			btnAnnuler.setEnabled(true);
 		}
