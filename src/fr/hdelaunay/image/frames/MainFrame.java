@@ -357,7 +357,7 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				final JFileChooser chooser = Utils.showDialog(MainFrame.this, true, new FileNameExtensionFilter("Fichier bitmap (*.bmp)", "bmp"), new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
+				final JFileChooser chooser = Utils.showDialog(MainFrame.this, true, new FileNameExtensionFilter("Image bitmap (*.bmp)", "bmp"), new FileNameExtensionFilter("Image PNG (*.png)", "png"), new FileNameExtensionFilter("Image JPEG (*.jpg, *.jpeg)", "jpg", "jpeg"));
 				if(chooser != null) {
 					open(chooser.getSelectedFile());
 				}
@@ -374,7 +374,7 @@ public class MainFrame extends JFrame {
 				if(lblPreview.stackSize() == 0) {
 					return;
 				}
-				final JFileChooser chooser = Utils.showDialog(MainFrame.this, false, new FileNameExtensionFilter("Fichier bitmap (*.bmp)", "bmp"), new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
+				final JFileChooser chooser = Utils.showDialog(MainFrame.this, false, new FileNameExtensionFilter("Image bitmap (*.bmp)", "bmp"), new FileNameExtensionFilter("Image PNG (*.png)", "png"), new FileNameExtensionFilter("Image JPEG (*.jpg, *.jpeg)", "jpg", "jpeg"));
 				if(chooser != null) {
 					save(chooser);
 				}
@@ -410,7 +410,7 @@ public class MainFrame extends JFrame {
 
 			@Override
 			public final void actionPerformed(final ActionEvent event) {
-				final JFileChooser chooser = Utils.showDialog(MainFrame.this, false, new FileNameExtensionFilter("Fichier PNG (*.png)", "png"));
+				final JFileChooser chooser = Utils.showDialog(MainFrame.this, false, new FileNameExtensionFilter("Image PNG (*.png)", "png"));
 				if(chooser != null) {
 					Utils.saveContent(MainFrame.this, chooser, lblPreview.getAsBufferedImage(true));
 				}
