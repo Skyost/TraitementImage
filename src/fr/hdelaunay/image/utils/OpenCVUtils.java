@@ -41,10 +41,14 @@ public class OpenCVUtils {
 
 	public static final Face[] getFaces(final BufferedImage input) {
 		final List<Face> faces = new ArrayList<Face>();
-		for(final Rect face : getTraits(input, "lbpcascade_frontalface.xml")) {
-			final List<Rect> detectedEyes = new ArrayList<Rect>(Arrays.asList(getTraits(input, "haarcascade_eye.xml")));
-			final List<Rect> detectedNoses = new ArrayList<Rect>(Arrays.asList(getTraits(input, "haarcascade_nose.xml")));
-			final List<Rect> detectedMouths = new ArrayList<Rect>(Arrays.asList(getTraits(input, "haarcascade_mouth.xml")));
+		final Rect[] detectedFaces = getFirstFacesNonNull(input);
+		if(detectedFaces == null) {
+			return null;
+		}
+		for(final Rect face : detectedFaces) {
+			final List<Rect> detectedEyes = new ArrayList<Rect>(Arrays.asList(getTraits(input, "eyes.xml")));
+			final List<Rect> detectedNoses = new ArrayList<Rect>(Arrays.asList(getTraits(input, "nose.xml")));
+			final List<Rect> detectedMouths = new ArrayList<Rect>(Arrays.asList(getTraits(input, "mouth.xml")));
 			for(final Rect eye : new ArrayList<Rect>(detectedEyes)) {
 				if(!isInBounds(face, eye)) {
 					detectedEyes.remove(eye);
@@ -66,6 +70,16 @@ public class OpenCVUtils {
 			faces.add(new Face(face, detectedEyes.toArray(new Rect[detectedEyes.size()]), detectedNoses.get(0), detectedMouths.get(0)));
 		}
 		return faces.toArray(new Face[faces.size()]);
+	}
+	
+	private static final Rect[] getFirstFacesNonNull(final BufferedImage input) {
+		for(int i = 1; i != 6; i++) {
+			final Rect[] face = getTraits(input, "face_" + i + ".xml");
+			if(face != null && face.length > 0) {
+				return face;
+			}
+		}
+		return null;
 	}
 	
 	public static final Rect[] getTraits(final BufferedImage input, final String xml) {
@@ -149,7 +163,7 @@ public class OpenCVUtils {
 			face.appendChild(mouth);
 			root.appendChild(face);
 			final Element image = document.createElement("image");
-			image.setAttribute("base64", Utils.imageToBase64(faceImage, "PNG"));
+			image.setAttribute("value", Utils.imageToBase64(faceImage, "PNG"));
 			root.appendChild(image);
 			document.appendChild(root);
 			return document;
@@ -171,7 +185,7 @@ public class OpenCVUtils {
 											(Rectangle)Utils.serializableFromString(face.item(3).getAttributes().getNamedItem("value").getNodeValue()),
 											Color.decode(root.getElementsByTagName("color").item(0).getAttributes().getNamedItem("value").getNodeValue())
 							),
-							Utils.imageFromBase64(root.getElementsByTagName("image").item(0).getAttributes().getNamedItem("base64").getNodeValue())
+							Utils.imageFromBase64(root.getElementsByTagName("image").item(0).getAttributes().getNamedItem("value").getNodeValue())
 			};
 		}
 		

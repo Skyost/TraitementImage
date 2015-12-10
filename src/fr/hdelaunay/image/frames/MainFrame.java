@@ -241,7 +241,7 @@ public class MainFrame extends JFrame {
 					@Override
 					public final void run() {
 						final Face[] faces = OpenCVUtils.getFaces(lblPreview.peekFromStack());
-						if(faces.length == 0) {
+						if(faces == null || faces.length == 0) {
 							JOptionPane.showMessageDialog(MainFrame.this, "Pas de visage sur cette image !");
 						}
 						else {
