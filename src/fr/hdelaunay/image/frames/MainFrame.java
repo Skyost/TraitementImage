@@ -76,7 +76,7 @@ public class MainFrame extends JFrame {
 	 * Le zoom actuel (0 <= zoom <= 100).
 	 */
 
-	private short zoom = 0;
+	private short zoom;
 
 	/*
 	 * Différents composants du GUI.
@@ -423,7 +423,7 @@ public class MainFrame extends JFrame {
 	}
 
 	/**
-	 * Ouvre un fichier (doit être une image BMP).
+	 * Ouvre un fichier.
 	 * 
 	 * @param file Le fichier.
 	 */

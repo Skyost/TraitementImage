@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -64,10 +65,7 @@ public class OpenCVUtils {
 					detectedMouths.remove(mouth);
 				}
 			}
-			/*if(detectedEyes.size() != 2) {
-				continue;
-			}*/
-			faces.add(new Face(face, detectedEyes.toArray(new Rect[detectedEyes.size()]), detectedNoses.get(0), detectedMouths.get(0)));
+			faces.add(new Face(face, detectedEyes.toArray(new Rect[detectedEyes.size()]), detectedNoses.size() > 0 ? detectedNoses.get(0) : null, detectedMouths.size() > 0 ? detectedMouths.get(0) : null));
 		}
 		return faces.toArray(new Face[faces.size()]);
 	}
@@ -83,6 +81,9 @@ public class OpenCVUtils {
 	}
 	
 	public static final Rect[] getTraits(final BufferedImage input, final String xml) {
+		/*final BufferedImage gray = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+		final Graphics2D graphics = gray.createGraphics();
+		graphics.drawImage(input, 0, 0, null);*/
 		final Mat image = new Mat(input.getWidth(), input.getHeight(), CvType.CV_8UC3);
 		image.put(0, 0, ((DataBufferByte)input.getRaster().getDataBuffer()).getData());
 		final MatOfRect faces = new MatOfRect();
@@ -107,7 +108,7 @@ public class OpenCVUtils {
 		}
 		
 		public Face(final Rect bounds, final Rect[] eyes, final Rect nose, final Rect mouth, final Color color) {
-			this(new Rectangle(bounds.x, bounds.y, bounds.width, bounds.height), new Rectangle[]{new Rectangle(eyes[0].x, eyes[0].y, eyes[0].width, eyes[0].height), new Rectangle(eyes[1].x, eyes[1].y, eyes[1].width, eyes[1].height)}, new Rectangle(nose.x, nose.y, nose.width, nose.height), new Rectangle(mouth.x, mouth.y, mouth.width, mouth.height), color);
+			this(new Rectangle(bounds.x, bounds.y, bounds.width, bounds.height), new Rectangle[]{eyes.length > 0 ? new Rectangle(eyes[0].x, eyes[0].y, eyes[0].width, eyes[0].height) : null, eyes.length > 1 ? new Rectangle(eyes[1].x, eyes[1].y, eyes[1].width, eyes[1].height) : null}, nose != null ? new Rectangle(nose.x, nose.y, nose.width, nose.height) : null, mouth != null ? new Rectangle(mouth.x, mouth.y, mouth.width, mouth.height) : null, color);
 		}
 		
 		public Face(final Rectangle bounds, final Rectangle[] eyes, final Rectangle nose, final Rectangle mouth, final Color color) {

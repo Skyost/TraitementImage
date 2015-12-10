@@ -37,14 +37,26 @@ public class JLabelPreview extends JLabel {
 				final Rectangle bounds = face.getBounds();
 				graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
 				final Rectangle[] eyes = face.getEyes();
-				graphics.drawRect(eyes[0].x, eyes[0].y, eyes[0].width, eyes[0].height);
-				graphics.drawRect(eyes[1].x, eyes[1].y, eyes[1].width, eyes[1].height);
+				if(eyes[0] != null) {
+					drawRect(graphics, eyes[0]);
+				}
+				if(eyes[1] != null) {
+					drawRect(graphics, eyes[1]);
+				}
 				final Rectangle nose = face.getNose();
-				graphics.drawRect(nose.x, nose.y, nose.width, nose.height);
+				if(nose != null) {
+					drawRect(graphics, nose);
+				}
 				final Rectangle mouth = face.getMouth();
-				graphics.drawRect(mouth.x, mouth.y, mouth.width, mouth.height);
+				if(mouth != null) {
+					drawRect(graphics, mouth);
+				}
 			}
 		}
+	}
+	
+	private final void drawRect(final Graphics graphics, final Rectangle rectangle) {
+		graphics.drawRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
 	}
 	
 	public final void setIcon(final BufferedImage image, final boolean pushToStack) {
