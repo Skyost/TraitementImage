@@ -11,7 +11,7 @@ Traitement d'image en Java.
 
 ## À Venir
 * Reconnaissance faciale ([OpenCV](http://docs.opencv.org/3.0-beta/doc/tutorials/introduction/desktop_java/java_dev_intro.html)) ?
-. Ou [JavaCV](https://github.com/bytedeco/javacv) avec [flandmark](https://github.com/bytedeco/javacpp-presets/tree/master/flandmark).
+ Ou [JavaCV](https://github.com/bytedeco/javacv) avec [flandmark](https://github.com/bytedeco/javacpp-presets/tree/master/flandmark).
 
 ## Captures d'écran
 ![Capture 1](https://github.com/Skyost/TraitementImage/blob/master/screenshots/screen-0.png)
