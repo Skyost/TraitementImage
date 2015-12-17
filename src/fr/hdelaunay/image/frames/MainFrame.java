@@ -73,7 +73,7 @@ public class MainFrame extends JFrame {
 	private BufferedImage antialiasing;
 
 	/**
-	 * Le zoom actuel (0 <= zoom <= 100).
+	 * Le zoom actuel (-100 <= zoom <= 100).
 	 */
 
 	private short zoom;
@@ -599,7 +599,7 @@ public class MainFrame extends JFrame {
 	 */
 
 	public final void zoom(final int zoom) {
-		if(zoom < 0 || zoom > 100) {
+		if(zoom < -100 || zoom > 100) {
 			return;
 		}
 		this.zoom = (short)zoom;
@@ -607,12 +607,13 @@ public class MainFrame extends JFrame {
 		lblZoom.setText("Zoom (" + zoom + "%) :");
 		if(zoom == 100) {
 			btnPlus.setEnabled(false);
+		}
+		else if(zoom == -100) {
 			btnMoins.setEnabled(false);
 		}
 		else if(zoom == 0) {
-			btnReconnaissanceFaciale.setEnabled(true);
 			btnPlus.setEnabled(true);
-			btnMoins.setEnabled(false);
+			btnMoins.setEnabled(true);
 			if(antialiasing != null) {
 				applyAntialiasing(false);
 			}
@@ -621,17 +622,16 @@ public class MainFrame extends JFrame {
 			lblPreview.setIcon(lblPreview.peekFromStack(), false);
 			return;
 		}
-		if(zoom > 0) {
+		if(zoom > -100) {
 			btnMoins.setEnabled(true);
 			chckbxAntialiasing.setEnabled(true);
-			btnReconnaissanceFaciale.setEnabled(false);
 		}
 		if(zoom < 100) {
 			btnPlus.setEnabled(true);
 		}
 		final AffineTransform transform = new AffineTransform();
 		transform.scale(zoom * .15f, zoom * .15f);
-		lblPreview.setIcon(new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(lblPreview.peekFromStack(), null), false);
+		lblPreview.setIcon(new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR).filter(lblPreview.peekFromStack(), null), false); // TODO: Zoom négatif impossible.
 		if(antialiasing != null) {
 			applyAntialiasing(true);
 		}
