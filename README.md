@@ -1,7 +1,7 @@
 Traitement d'images
 ==================
 
-Traitement d'image en Java.
+Traitement d'image en Java. **Projet non terminé !**
 
 ## Fonctionnalités
 * Enregistrement et chargement de matrices de convolution (*.mtx).
